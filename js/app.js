@@ -361,6 +361,10 @@ function closeDashboard() {
   document.getElementById('dashboardOverlay').classList.remove('active');
 }
 
+function isSamplePost(p) {
+  return p.isSample || (p.id && p.id.indexOf('sample_') === 0);
+}
+
 function renderDashboard() {
   renderCategoryChart();
   renderTopRanking();
@@ -369,9 +373,10 @@ function renderDashboard() {
 
 function renderCategoryChart() {
   var container = document.getElementById('categoryChart');
+  var realPosts = posts.filter(function(p) { return !isSamplePost(p); });
   var counts = {};
   CATEGORIES.forEach(function(c) { counts[c.id] = 0; });
-  posts.forEach(function(p) { if (counts[p.category] !== undefined) counts[p.category]++; });
+  realPosts.forEach(function(p) { if (counts[p.category] !== undefined) counts[p.category]++; });
 
   var max = Math.max.apply(null, Object.values(counts).concat([1]));
 
@@ -391,7 +396,8 @@ function renderCategoryChart() {
 
 function renderTopRanking() {
   var container = document.getElementById('topRanking');
-  var sorted = posts.slice().sort(function(a, b) { return b.agrees - a.agrees; });
+  var realPosts = posts.filter(function(p) { return !isSamplePost(p); });
+  var sorted = realPosts.slice().sort(function(a, b) { return b.agrees - a.agrees; });
   var top5 = sorted.slice(0, 5);
 
   if (top5.length === 0) {
@@ -415,9 +421,10 @@ function renderTopRanking() {
 
 function renderHotTopics() {
   var container = document.getElementById('hotTopics');
+  var realPosts = posts.filter(function(p) { return !isSamplePost(p); });
 
   var areaMap = {};
-  posts.forEach(function(post) {
+  realPosts.forEach(function(post) {
     var areaKey = Math.round(post.lat * 100) / 100 + ',' + Math.round(post.lng * 100) / 100;
     if (!areaMap[areaKey]) {
       areaMap[areaKey] = { lat: post.lat, lng: post.lng, posts: [], totalAgrees: 0 };
