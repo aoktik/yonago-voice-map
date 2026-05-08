@@ -108,6 +108,16 @@ body {
   background: #cc0000;
 }
 
+.btn-youtube.coming-soon {
+  background: #999;
+  cursor: default;
+  opacity: 0.8;
+}
+
+.btn-youtube.coming-soon:hover {
+  background: #999;
+}
+
 .main-content {
   flex: 1;
   display: flex;
