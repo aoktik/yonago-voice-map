@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>米子市民の声マップ</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header class="header">
+    <div class="header-inner">
+      <div class="header-left">
+        <h1 class="logo">📍 米子市民の声マップ</h1>
+        <p class="tagline">あなたの声が、まちを変える。</p>
+      </div>
+      <div class="header-right">
+        <button class="btn-dashboard" id="toggleDashboard">📊 ダッシュボード</button>
+        <a class="btn-youtube" href="#" id="youtubeLink" target="_blank">▶ YouTube討論チャンネル</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <div class="map-container">
+      <div id="map"></div>
+      <div class="map-hint" id="mapHint">
+        💡 地図をクリックして声を投稿しよう！
+      </div>
+    </div>
+
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <h2>みんなの声</h2>
+        <span class="post-count" id="postCount">0件</span>
+      </div>
+
+      <div class="category-filter" id="categoryFilter">
+        <button class="filter-btn active" data-category="all">すべて</button>
+      </div>
+
+      <div class="post-list" id="postList"></div>
+    </aside>
+  </main>
+
+  <div class="dashboard-overlay" id="dashboardOverlay">
+    <div class="dashboard">
+      <div class="dashboard-header">
+        <h2>📊 討論テーマ ダッシュボード</h2>
+        <p class="dashboard-subtitle">この声をYouTubeで討論しよう！</p>
+        <button class="dashboard-close" id="closeDashboard">✕</button>
+      </div>
+
+      <div class="dashboard-grid">
+        <section class="dashboard-card">
+          <h3>カテゴリ別 投稿数</h3>
+          <div id="categoryChart" class="category-chart"></div>
+        </section>
+
+        <section class="dashboard-card">
+          <h3>🔥 討論テーマ候補 TOP5</h3>
+          <p class="card-desc">賛同数が多い声をランキング</p>
+          <ol id="topRanking" class="top-ranking"></ol>
+        </section>
+
+        <section class="dashboard-card wide">
+          <h3>💬 今週のホットトピック</h3>
+          <p class="card-desc">直近の注目エリア・テーマをピックアップ</p>
+          <div id="hotTopics" class="hot-topics"></div>
+        </section>
+      </div>
+    </div>
+  </div>
+
+  <div class="post-form-overlay" id="postFormOverlay">
+    <div class="post-form">
+      <h3>📝 この場所について声を投稿</h3>
+      <p class="form-location" id="formLocation"></p>
+
+      <div class="form-group">
+        <label>カテゴリ</label>
+        <div class="category-select" id="categorySelect"></div>
+      </div>
+
+      <div class="form-group">
+        <label for="nickname">ニックネーム（任意）</label>
+        <input type="text" id="nickname" placeholder="匿名さん" maxlength="20">
+      </div>
+
+      <div class="form-group">
+        <label for="message">あなたの声 <span class="char-count" id="charCount">0/200</span></label>
+        <textarea id="message" placeholder="例：この交差点の渋滞を解消してほしい！" maxlength="200" rows="4"></textarea>
+      </div>
+
+      <div class="form-actions">
+        <button class="btn-cancel" id="cancelPost">キャンセル</button>
+        <button class="btn-submit" id="submitPost">投稿する</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
