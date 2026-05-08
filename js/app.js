@@ -126,6 +126,68 @@ function sanitizeText(str, maxLen) {
 
 var VALID_CATEGORY_IDS = CATEGORIES.map(function(c) { return c.id; });
 
+var NG_WORDS = [
+  '死ね', '殺す', '殺せ', 'ころす', 'ころせ', 'しね',
+  'バカ', 'ばか', '馬鹿', 'アホ', 'あほ', '阿呆',
+  'クソ', 'くそ', '糞', 'カス', 'かす', 'ゴミ', 'ごみ',
+  'キモい', 'きもい', 'キモ', 'きも', 'ウザい', 'うざい', 'ウザ',
+  'ブス', 'ぶす', 'デブ', 'でぶ', 'ハゲ', 'はげ',
+  '消えろ', 'きえろ', '失せろ', 'うせろ',
+  'ムカつく', 'むかつく', 'イラつく', 'いらつく',
+  '嫌い', 'きらい', '大嫌い',
+  'クズ', 'くず', '屑',
+  'うんこ', 'うんち',
+  'ざまあ', 'ザマア', 'ざまぁ',
+  'ボケ', 'ぼけ',
+  'ガイジ', 'がいじ',
+  '障害者', '知障',
+  'チビ', 'ちび',
+  '在日', '反日',
+  '犯罪者',
+];
+
+var NG_PATTERNS = [
+  /[ぁ-んァ-ヶ一-龥a-zA-Z]+が悪い/,
+  /[ぁ-んァ-ヶ一-龥a-zA-Z]+のせい/,
+  /[ぁ-んァ-ヶ一-龥a-zA-Z]+は無能/,
+  /[ぁ-んァ-ヶ一-龥a-zA-Z]+やめろ/,
+  /[ぁ-んァ-ヶ一-龥a-zA-Z]+辞めろ/,
+  /[ぁ-んァ-ヶ一-龥a-zA-Z]+が嫌/,
+  /[ぁ-んァ-ヶ一-龥a-zA-Z]+なんか/,
+  /[ぁ-んァ-ヶ一-龥a-zA-Z]+ごとき/,
+  /市[長議].*無能/,
+  /市[長議].*やめ/,
+  /市[長議].*辞め/,
+  /誰.*得/,
+  /税金.*無駄/,
+  /税金.*泥棒/,
+];
+
+var REJECTION_MESSAGES = [
+  'この投稿には不適切な表現が含まれています。\n\nこのサイトは米子市をもっと良くするための前向きな声を集める場です。\n「〇〇してほしい」「〇〇があるといいな」のような建設的な表現に書き換えてみてください！',
+  'この投稿には個人攻撃や否定的な表現が含まれているようです。\n\n例えば：\n❌「〇〇が悪い」→ ⭕「〇〇を改善してほしい」\n❌「〇〇のせいで…」→ ⭕「〇〇の状況を良くしてほしい」\n\n前向きな声に書き換えて再投稿してください！',
+];
+
+function moderateContent(text) {
+  var normalized = text
+    .replace(/[Ａ-Ｚａ-ｚ０-９]/g, function(s) { return String.fromCharCode(s.charCodeAt(0) - 0xFEE0); })
+    .replace(/[\s　]+/g, '');
+
+  for (var i = 0; i < NG_WORDS.length; i++) {
+    if (normalized.indexOf(NG_WORDS[i]) !== -1) {
+      return { ok: false, reason: REJECTION_MESSAGES[0] };
+    }
+  }
+
+  for (var j = 0; j < NG_PATTERNS.length; j++) {
+    if (NG_PATTERNS[j].test(normalized)) {
+      return { ok: false, reason: REJECTION_MESSAGES[1] };
+    }
+  }
+
+  return { ok: true };
+}
+
 function submitPost() {
   var msg = sanitizeText(document.getElementById('message').value, 200);
   if (!selectedCategory || VALID_CATEGORY_IDS.indexOf(selectedCategory) === -1) {
@@ -137,7 +199,18 @@ function submitPost() {
     return;
   }
 
+  var modResult = moderateContent(msg);
+  if (!modResult.ok) {
+    showModerationAlert(modResult.reason);
+    return;
+  }
+
   var nickname = sanitizeText(document.getElementById('nickname').value, 20) || '匿名さん';
+  var nickModResult = moderateContent(nickname);
+  if (!nickModResult.ok) {
+    showModerationAlert('ニックネームに不適切な表現が含まれています。別の名前にしてください。');
+    return;
+  }
 
   var post = {
     id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
@@ -467,6 +540,31 @@ function loadSampleData() {
   });
 
   saveData();
+}
+
+function showModerationAlert(message) {
+  var overlay = document.getElementById('moderationOverlay');
+  if (!overlay) {
+    overlay = document.createElement('div');
+    overlay.id = 'moderationOverlay';
+    overlay.className = 'moderation-overlay';
+    overlay.innerHTML =
+      '<div class="moderation-dialog">' +
+        '<div class="moderation-icon">🌱</div>' +
+        '<h3 class="moderation-title">前向きな声をお願いします</h3>' +
+        '<p class="moderation-message" id="moderationMessage"></p>' +
+        '<button class="moderation-btn" id="moderationClose">書き直す</button>' +
+      '</div>';
+    document.body.appendChild(overlay);
+    document.getElementById('moderationClose').addEventListener('click', function() {
+      overlay.classList.remove('active');
+    });
+    overlay.addEventListener('click', function(e) {
+      if (e.target === overlay) overlay.classList.remove('active');
+    });
+  }
+  document.getElementById('moderationMessage').textContent = message;
+  overlay.classList.add('active');
 }
 
 function isValidPost(p) {
