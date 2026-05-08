@@ -22,6 +22,7 @@ let selectedCategory = null;
 
 function init() {
   loadData();
+  purgeInappropriatePosts();
   initMap();
   initUI();
   renderFilterButtons();
@@ -33,6 +34,15 @@ function init() {
     renderPosts();
     renderMarkers();
   }
+}
+
+function purgeInappropriatePosts() {
+  var before = posts.length;
+  posts = posts.filter(function(p) {
+    if (isSamplePost(p)) return true;
+    return moderateContent(p.message).ok && moderateContent(p.nickname).ok;
+  });
+  if (posts.length < before) saveData();
 }
 
 function initMap() {
@@ -171,7 +181,8 @@ var REJECTION_MESSAGES = [
 function moderateContent(text) {
   var normalized = text
     .replace(/[Ａ-Ｚａ-ｚ０-９]/g, function(s) { return String.fromCharCode(s.charCodeAt(0) - 0xFEE0); })
-    .replace(/[\s　]+/g, '');
+    .replace(/[\s　]+/g, '')
+    .replace(/[ー\-ー―—–～〜・.．,，、。!！?？\*＊_＿#＃○◯●◎△▲▽▼☆★♪♫→←↑↓]/g, '');
 
   for (var i = 0; i < NG_WORDS.length; i++) {
     if (normalized.indexOf(NG_WORDS[i]) !== -1) {
