@@ -224,6 +224,27 @@ body {
   padding: 8px 0;
 }
 
+.sample-badge {
+  font-size: 0.68rem;
+  background: #f1f5f9;
+  color: #64748b;
+  padding: 2px 7px;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  white-space: nowrap;
+}
+
+.popup-sample-note {
+  font-size: 0.72rem;
+  color: #64748b;
+  background: #f8fafc;
+  border: 1px dashed #cbd5e1;
+  border-radius: 6px;
+  padding: 4px 8px;
+  margin-bottom: 8px;
+  text-align: center;
+}
+
 .post-item {
   padding: 14px 20px;
   border-bottom: 1px solid var(--border);

@@ -253,7 +253,10 @@ function renderMarkers() {
 
     var marker = L.marker([post.lat, post.lng], { icon: createMarkerIcon(cat) }).addTo(map);
 
+    var isPopupSample = post.isSample || (post.id && post.id.indexOf('sample_') === 0);
+    var popupSampleNote = isPopupSample ? '<div class="popup-sample-note">📌 これは投稿の一例です</div>' : '';
     var popupHtml = '<div class="popup-content">' +
+      popupSampleNote +
       '<span class="popup-category" style="background:' + cat.color + '">' + cat.emoji + ' ' + cat.name + '</span>' +
       '<p class="popup-message">' + escapeHtml(post.message) + '</p>' +
       '<span class="popup-nickname">' + escapeHtml(post.nickname) + '</span>' +
@@ -290,9 +293,12 @@ function renderPosts() {
 
     var item = document.createElement('div');
     item.className = 'post-item';
+    var isSample = post.isSample || (post.id && post.id.indexOf('sample_') === 0);
+    var sampleBadge = isSample ? '<span class="sample-badge">📌 投稿例</span>' : '';
     item.innerHTML =
       '<div class="post-item-header">' +
         '<span class="post-category-badge" style="background:' + cat.color + '">' + cat.emoji + ' ' + cat.name + '</span>' +
+        sampleBadge +
         '<span class="post-nickname">' + escapeHtml(post.nickname) + '</span>' +
       '</div>' +
       '<p class="post-message">' + escapeHtml(post.message) + '</p>' +
@@ -535,6 +541,7 @@ function loadSampleData() {
       nickname: s.nickname,
       message: s.message,
       agrees: s.agrees,
+      isSample: true,
       createdAt: new Date(now - (i * 3600000 * 6)).toISOString(),
     });
   });
