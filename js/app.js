@@ -119,9 +119,16 @@ function closePostForm() {
   selectedCategory = null;
 }
 
+function sanitizeText(str, maxLen) {
+  if (typeof str !== 'string') return '';
+  return str.replace(/[\x00-\x08\x0b\x0c\x0e-\x1f]/g, '').trim().slice(0, maxLen);
+}
+
+var VALID_CATEGORY_IDS = CATEGORIES.map(function(c) { return c.id; });
+
 function submitPost() {
-  var msg = document.getElementById('message').value.trim();
-  if (!selectedCategory) {
+  var msg = sanitizeText(document.getElementById('message').value, 200);
+  if (!selectedCategory || VALID_CATEGORY_IDS.indexOf(selectedCategory) === -1) {
     alert('カテゴリを選択してください');
     return;
   }
@@ -130,12 +137,14 @@ function submitPost() {
     return;
   }
 
+  var nickname = sanitizeText(document.getElementById('nickname').value, 20) || '匿名さん';
+
   var post = {
     id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
-    lat: pendingLatLng.lat,
-    lng: pendingLatLng.lng,
+    lat: Number(pendingLatLng.lat),
+    lng: Number(pendingLatLng.lng),
     category: selectedCategory,
-    nickname: document.getElementById('nickname').value.trim() || '匿名さん',
+    nickname: nickname,
     message: msg,
     agrees: 0,
     createdAt: new Date().toISOString(),
@@ -175,11 +184,17 @@ function renderMarkers() {
       '<span class="popup-category" style="background:' + cat.color + '">' + cat.emoji + ' ' + cat.name + '</span>' +
       '<p class="popup-message">' + escapeHtml(post.message) + '</p>' +
       '<span class="popup-nickname">' + escapeHtml(post.nickname) + '</span>' +
-      '<br><button class="popup-agree-btn" onclick="toggleAgree(\'' + post.id + '\')">' +
-      '👍 賛同 <span id="popup-agree-' + post.id + '">' + post.agrees + '</span></button>' +
+      '<br><button class="popup-agree-btn" data-post-id="' + escapeHtml(post.id) + '">' +
+      '👍 賛同 <span class="popup-agree-count">' + post.agrees + '</span></button>' +
       '</div>';
 
     marker.bindPopup(popupHtml);
+    marker.on('popupopen', function() {
+      var btn = document.querySelector('.popup-agree-btn[data-post-id="' + CSS.escape(post.id) + '"]');
+      if (btn) {
+        btn.addEventListener('click', function() { toggleAgree(post.id); });
+      }
+    });
     markers[post.id] = marker;
   });
 }
@@ -236,6 +251,7 @@ function renderPosts() {
 }
 
 function toggleAgree(postId) {
+  if (typeof postId !== 'string' || !/^[a-z0-9_]+$/.test(postId)) return;
   var post = posts.find(function(p) { return p.id === postId; });
   if (!post) return;
 
@@ -250,8 +266,11 @@ function toggleAgree(postId) {
   saveData();
   renderPosts();
 
-  var popupEl = document.getElementById('popup-agree-' + postId);
-  if (popupEl) popupEl.textContent = post.agrees;
+  var btn = document.querySelector('.popup-agree-btn[data-post-id="' + CSS.escape(postId) + '"]');
+  if (btn) {
+    var countEl = btn.querySelector('.popup-agree-count');
+    if (countEl) countEl.textContent = post.agrees;
+  }
 }
 
 function openDashboard() {
@@ -450,21 +469,54 @@ function loadSampleData() {
   saveData();
 }
 
+function isValidPost(p) {
+  return p
+    && typeof p.id === 'string' && /^[a-z0-9_]+$/.test(p.id)
+    && typeof p.lat === 'number' && isFinite(p.lat)
+    && typeof p.lng === 'number' && isFinite(p.lng)
+    && typeof p.category === 'string' && VALID_CATEGORY_IDS.indexOf(p.category) !== -1
+    && typeof p.nickname === 'string' && p.nickname.length <= 20
+    && typeof p.message === 'string' && p.message.length <= 200
+    && typeof p.agrees === 'number' && isFinite(p.agrees) && p.agrees >= 0
+    && typeof p.createdAt === 'string';
+}
+
 function loadData() {
   try {
     var stored = localStorage.getItem(STORAGE_KEY);
-    if (stored) posts = JSON.parse(stored);
+    if (stored) {
+      var parsed = JSON.parse(stored);
+      if (Array.isArray(parsed)) {
+        posts = parsed.filter(isValidPost);
+      }
+    }
     var agreed = localStorage.getItem(AGREED_KEY);
-    if (agreed) agreedSet = new Set(JSON.parse(agreed));
+    if (agreed) {
+      var agreedParsed = JSON.parse(agreed);
+      if (Array.isArray(agreedParsed)) {
+        agreedSet = new Set(agreedParsed.filter(function(id) {
+          return typeof id === 'string' && /^[a-z0-9_]+$/.test(id);
+        }));
+      }
+    }
   } catch(e) {
     posts = [];
     agreedSet = new Set();
   }
 }
 
+var MAX_POSTS = 500;
+
 function saveData() {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(posts));
-  localStorage.setItem(AGREED_KEY, JSON.stringify(Array.from(agreedSet)));
+  if (posts.length > MAX_POSTS) {
+    posts = posts.slice(0, MAX_POSTS);
+  }
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(posts));
+    localStorage.setItem(AGREED_KEY, JSON.stringify(Array.from(agreedSet)));
+  } catch(e) {
+    console.warn('localStorage save failed');
+  }
 }
 
 function escapeHtml(str) {
