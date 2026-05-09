@@ -1348,7 +1348,7 @@ var TOPIC_DESIGNS = {
     accent: '徹底討論',
     stripe: 'linear-gradient(90deg, #ea580c, #fbbf24)',
     summary: 'かつて山陰屈指の温泉街として栄えた皆生温泉。しかし近年は旅館の廃業が相次ぎ、空き建物が目立つように。一方でKAIKEテラスなど新しい動きも。温泉街は「観光地」として再生すべきか、「住民の暮らしの場」として進化すべきか？ データと市民の声から皆生の未来を討論します。',
-    noteUrl: '',
+    noteUrl: 'https://note.com/aoktik/n/n161d83a87e75',
   },
   topic_02: {
     photo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/7/77/Yonago_station_South_exit.jpg/960px-Yonago_station_South_exit.jpg',
