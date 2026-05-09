@@ -1343,12 +1343,12 @@ body {
 
 .yt-thumb {
   position: relative;
-  min-height: 140px;
   padding: 0;
   overflow: hidden;
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
+  aspect-ratio: 16 / 9;
 }
 
 .yt-thumb-bg {
@@ -1373,7 +1373,8 @@ body {
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
-  min-height: 140px;
+  position: absolute;
+  inset: 0;
 }
 
 .yt-thumb-tag {
