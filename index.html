@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="X-Content-Type-Options" content="nosniff">
   <meta name="referrer" content="no-referrer">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://unpkg.com; style-src 'self' 'unsafe-inline' https://unpkg.com; img-src 'self' https://*.tile.openstreetmap.org https://upload.wikimedia.org data:; connect-src 'self' https://pqnuxkdfegydungyfnsq.supabase.co; frame-ancestors 'none';">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://unpkg.com; style-src 'self' 'unsafe-inline' https://unpkg.com; img-src 'self' https://*.tile.openstreetmap.org https://upload.wikimedia.org data:; connect-src 'self' https://pqnuxkdfegydungyfnsq.supabase.co https://nominatim.openstreetmap.org; frame-ancestors 'none';">
   <title>米子市民の声マップ</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha384-sHL9NAb7lN7rfvG5lfHpm643Xkcjzp4jFvuavGOndn6pjVqS6ny56CAt3nsEVT4H" crossorigin="anonymous" />
   <link rel="stylesheet" href="css/style.css">
@@ -27,6 +27,13 @@
   <main class="main-content">
     <div class="map-container">
       <div id="map"></div>
+      <div class="map-controls">
+        <div class="search-box">
+          <input type="text" id="searchInput" placeholder="場所・店舗を検索（例：米子駅、皆生温泉）" maxlength="100">
+          <button id="searchBtn" class="search-btn">🔍</button>
+        </div>
+        <button id="locateBtn" class="locate-btn" title="現在地を表示">📍</button>
+      </div>
       <div class="map-hint" id="mapHint">
         💡 地図をクリックして声を投稿しよう！
       </div>

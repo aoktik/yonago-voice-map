@@ -90,6 +90,8 @@ async function init() {
   initMap();
   initUI();
   initSidebarTabs();
+  initSearch();
+  initLocate();
   renderFilterButtons();
   await loadData();
   await migrateLocalStorageToSupabase();
@@ -189,6 +191,126 @@ function initUI() {
       selectedCategory = cat.id;
     });
     catSelect.appendChild(btn);
+  });
+}
+
+// === 検索機能 ===
+var searchMarker = null;
+
+function initSearch() {
+  var input = document.getElementById('searchInput');
+  var btn = document.getElementById('searchBtn');
+
+  btn.addEventListener('click', function() { doSearch(); });
+  input.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') doSearch();
+  });
+}
+
+async function doSearch() {
+  var input = document.getElementById('searchInput');
+  var btn = document.getElementById('searchBtn');
+  var query = input.value.trim();
+  if (!query) return;
+
+  btn.disabled = true;
+  btn.textContent = '...';
+
+  try {
+    var url = 'https://nominatim.openstreetmap.org/search?' +
+      'q=' + encodeURIComponent(query + ' 米子市 鳥取県') +
+      '&format=json&limit=1&countrycodes=jp&accept-language=ja';
+    var res = await fetch(url, {
+      headers: { 'User-Agent': 'YonagoVoiceMap/1.0' }
+    });
+    var data = await res.json();
+
+    if (data.length > 0) {
+      var result = data[0];
+      var lat = parseFloat(result.lat);
+      var lng = parseFloat(result.lon);
+      var name = result.display_name.split(',')[0];
+
+      if (searchMarker) map.removeLayer(searchMarker);
+      searchMarker = L.marker([lat, lng], {
+        icon: L.divIcon({
+          className: 'custom-marker',
+          html: '<div style="background:#2563eb;width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;box-shadow:0 2px 8px rgba(0,0,0,0.3);border:3px solid white;">🔍</div>',
+          iconSize: [36, 36],
+          iconAnchor: [18, 36],
+          popupAnchor: [0, -38],
+        })
+      }).addTo(map);
+      searchMarker.bindPopup('<div class="search-result-popup">🔍 ' + escapeHtml(name) + '</div>').openPopup();
+      map.setView([lat, lng], 16);
+    } else {
+      alert('「' + query + '」が見つかりませんでした。\n別のキーワードで試してみてください。');
+    }
+  } catch (e) {
+    console.error('Search failed:', e);
+    alert('検索に失敗しました。もう一度お試しください。');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '🔍';
+  }
+}
+
+// === 現在地機能 ===
+var locationMarker = null;
+var locationCircle = null;
+
+function initLocate() {
+  document.getElementById('locateBtn').addEventListener('click', function() {
+    if (!navigator.geolocation) {
+      alert('お使いのブラウザは位置情報に対応していません。');
+      return;
+    }
+
+    var btn = this;
+    btn.classList.add('locating');
+    btn.textContent = '⏳';
+
+    navigator.geolocation.getCurrentPosition(
+      function(pos) {
+        var lat = pos.coords.latitude;
+        var lng = pos.coords.longitude;
+        var accuracy = pos.coords.accuracy;
+
+        if (locationMarker) map.removeLayer(locationMarker);
+        if (locationCircle) map.removeLayer(locationCircle);
+
+        locationMarker = L.marker([lat, lng], {
+          icon: L.divIcon({
+            className: 'custom-marker',
+            html: '<div style="width:18px;height:18px;background:#2563eb;border-radius:50%;border:3px solid white;box-shadow:0 0 0 4px rgba(37,99,235,0.3),0 2px 6px rgba(0,0,0,0.3);"></div>',
+            iconSize: [18, 18],
+            iconAnchor: [9, 9],
+          })
+        }).addTo(map);
+
+        locationCircle = L.circle([lat, lng], {
+          radius: accuracy,
+          color: '#2563eb',
+          fillColor: '#2563eb',
+          fillOpacity: 0.1,
+          weight: 1,
+        }).addTo(map);
+
+        map.setView([lat, lng], 16);
+        btn.classList.remove('locating');
+        btn.textContent = '📍';
+      },
+      function(err) {
+        btn.classList.remove('locating');
+        btn.textContent = '📍';
+        if (err.code === 1) {
+          alert('位置情報の使用が許可されていません。\nブラウザの設定から許可してください。');
+        } else {
+          alert('現在地を取得できませんでした。');
+        }
+      },
+      { enableHighAccuracy: true, timeout: 10000 }
+    );
   });
 }
 

@@ -136,6 +136,97 @@ body {
   height: 100%;
 }
 
+/* Map controls - search & locate */
+.map-controls {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  right: 12px;
+  z-index: 800;
+  display: flex;
+  gap: 8px;
+  pointer-events: none;
+}
+
+.map-controls > * {
+  pointer-events: auto;
+}
+
+.search-box {
+  flex: 1;
+  max-width: 360px;
+  display: flex;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  overflow: hidden;
+}
+
+.search-box input {
+  flex: 1;
+  border: none;
+  padding: 10px 14px;
+  font-size: 0.85rem;
+  font-family: inherit;
+  outline: none;
+  min-width: 0;
+}
+
+.search-box input::placeholder {
+  color: #94a3b8;
+}
+
+.search-btn {
+  border: none;
+  background: var(--primary);
+  color: white;
+  padding: 10px 14px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.search-btn:hover {
+  background: #1d4ed8;
+}
+
+.search-btn:disabled {
+  background: #94a3b8;
+  cursor: not-allowed;
+}
+
+.locate-btn {
+  width: 42px;
+  height: 42px;
+  border: none;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.locate-btn:hover {
+  background: var(--primary-light);
+}
+
+.locate-btn.locating {
+  animation: pulse-locate 1s ease-in-out infinite;
+}
+
+@keyframes pulse-locate {
+  0%, 100% { background: white; }
+  50% { background: #dbeafe; }
+}
+
+.search-result-popup {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
 .map-hint {
   position: absolute;
   bottom: 20px;
@@ -1483,6 +1574,14 @@ body {
 
   .map-container {
     height: 50vh;
+  }
+
+  .search-box {
+    max-width: none;
+  }
+
+  .search-box input {
+    font-size: 16px;
   }
 
   .sidebar {
