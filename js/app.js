@@ -152,20 +152,34 @@ async function migrateLocalStorageToSupabase() {
   }
 }
 
-// 米子市のおおよその境界
-var YONAGO_BOUNDS = L.latLngBounds(
-  L.latLng(35.35, 133.20),  // 南西
-  L.latLng(35.52, 133.45)   // 北東
-);
+// 米子市の境界ポリゴン（yonago-boundary.jsで定義）
+var yonagoBoundaryPolygon = null;
 
 function isInYonago(latlng) {
-  return YONAGO_BOUNDS.contains(latlng);
+  if (!yonagoBoundaryPolygon) return true;
+  // Ray casting algorithm for point-in-polygon
+  var point = [latlng.lat, latlng.lng];
+  var coords = YONAGO_BOUNDARY;
+  var inside = false;
+  for (var i = 0, j = coords.length - 1; i < coords.length; j = i++) {
+    var yi = coords[i][0], xi = coords[i][1];
+    var yj = coords[j][0], xj = coords[j][1];
+    if (((yi > point[0]) !== (yj > point[0])) &&
+        (point[1] < (xj - xi) * (point[0] - yi) / (yj - yi) + xi)) {
+      inside = !inside;
+    }
+  }
+  return inside;
 }
 
 function initMap() {
+  var boundsRect = L.latLngBounds(
+    L.latLng(35.35, 133.20),
+    L.latLng(35.52, 133.48)
+  );
   map = L.map('map', {
     zoomControl: false,
-    maxBounds: YONAGO_BOUNDS.pad(0.1),
+    maxBounds: boundsRect.pad(0.05),
     maxBoundsViscosity: 0.8,
     minZoom: 12,
   }).setView([35.428, 133.331], 14);
@@ -174,6 +188,19 @@ function initMap() {
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
     maxZoom: 19,
   }).addTo(map);
+
+  // 米子市の境界線を描画
+  if (typeof YONAGO_BOUNDARY !== 'undefined') {
+    yonagoBoundaryPolygon = L.polygon(YONAGO_BOUNDARY, {
+      color: '#2563eb',
+      weight: 2.5,
+      opacity: 0.6,
+      fillColor: '#2563eb',
+      fillOpacity: 0.03,
+      dashArray: '8, 6',
+      interactive: false,
+    }).addTo(map);
+  }
 
   map.on('click', function(e) {
     if (!isInYonago(e.latlng)) {
