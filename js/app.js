@@ -1557,18 +1557,30 @@ function renderYoutubeTopics() {
       '</div>' +
       '<div class="yt-topic-body">' +
         '<p class="yt-topic-subtitle">' + escapeHtml(topic.subtitle || '') + '</p>' +
-        '<div class="yt-vote-bar-wrap">' +
-          '<div class="yt-vote-bar-fill" style="width:' + likePct + '%"></div>' +
-        '</div>' +
-        '<div class="yt-vote-actions">' +
-          '<button class="yt-vote-btn yt-like' + (userVote === 'like' ? ' voted' : '') + '" data-topic="' + topic.id + '" data-vote="like">' +
-            '👍 見たい <span>' + topic.likes + '</span>' +
-          '</button>' +
-          '<button class="yt-vote-btn yt-dislike' + (userVote === 'dislike' ? ' voted' : '') + '" data-topic="' + topic.id + '" data-vote="dislike">' +
-            '👎 <span>' + topic.dislikes + '</span>' +
-          '</button>' +
+        '<div class="yt-card-actions">' +
+          '<div class="yt-vote-inline">' +
+            '<div class="yt-vote-bar-wrap">' +
+              '<div class="yt-vote-bar-fill" style="width:' + likePct + '%"></div>' +
+            '</div>' +
+            '<div class="yt-vote-actions">' +
+              '<button class="yt-vote-btn yt-like' + (userVote === 'like' ? ' voted' : '') + '" data-topic="' + topic.id + '" data-vote="like">' +
+                '👍 見たい <span>' + topic.likes + '</span>' +
+              '</button>' +
+              '<button class="yt-vote-btn yt-dislike' + (userVote === 'dislike' ? ' voted' : '') + '" data-topic="' + topic.id + '" data-vote="dislike">' +
+                '👎 <span>' + topic.dislikes + '</span>' +
+              '</button>' +
+            '</div>' +
+          '</div>' +
+          '<button class="yt-detail-btn" data-topic="' + topic.id + '">📝 詳しく</button>' +
         '</div>' +
       '</div>';
+
+    var detailBtn = card.querySelector('.yt-detail-btn');
+    if (detailBtn) {
+      detailBtn.addEventListener('click', function() {
+        openTopicDetail(topic.id);
+      });
+    }
 
     card.querySelector('.yt-thumb').addEventListener('click', function() {
       openTopicDetail(topic.id);

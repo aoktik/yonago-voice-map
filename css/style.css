@@ -277,7 +277,7 @@ body {
 }
 
 .sidebar {
-  width: 360px;
+  width: 420px;
   background: var(--surface);
   border-left: 1px solid var(--border);
   display: flex;
@@ -1388,6 +1388,7 @@ body {
   overflow: hidden;
   box-shadow: 0 4px 16px rgba(0,0,0,0.15);
   background: var(--surface);
+  flex-shrink: 0;
 }
 
 .yt-thumb {
@@ -1398,6 +1399,7 @@ body {
   flex-direction: column;
   justify-content: flex-end;
   aspect-ratio: 16 / 9;
+  min-height: 200px;
 }
 
 .yt-thumb-bg {
@@ -1431,15 +1433,15 @@ body {
   top: 0;
   left: 0;
   z-index: 3;
-  font-size: 0.62rem;
+  font-size: 0.7rem;
   font-weight: 800;
   color: white;
-  padding: 4px 10px;
+  padding: 5px 12px;
   letter-spacing: 0.5px;
 }
 
 .yt-thumb-hook {
-  font-size: 0.7rem;
+  font-size: 0.8rem;
   font-weight: 700;
   color: #fbbf24;
   margin-bottom: 4px;
@@ -1448,7 +1450,7 @@ body {
 }
 
 .yt-thumb-title {
-  font-size: 1.2rem;
+  font-size: 1.35rem;
   font-weight: 900;
   color: white;
   line-height: 1.3;
@@ -1458,12 +1460,12 @@ body {
 
 .yt-thumb-title .yt-keyword {
   color: #fbbf24;
-  font-size: 1.35rem;
+  font-size: 1.5rem;
 }
 
 .yt-thumb-title .yt-keyword-red {
   color: #ff4444;
-  font-size: 1.35rem;
+  font-size: 1.5rem;
 }
 
 .yt-thumb-accent {
@@ -1473,9 +1475,9 @@ body {
   z-index: 3;
   background: rgba(255,0,0,0.9);
   color: white;
-  font-size: 0.6rem;
+  font-size: 0.7rem;
   font-weight: 800;
-  padding: 3px 8px;
+  padding: 4px 10px;
   border-radius: 3px;
   transform: rotate(2deg);
   letter-spacing: 1px;
@@ -1496,10 +1498,41 @@ body {
 }
 
 .yt-topic-subtitle {
-  font-size: 0.75rem;
+  font-size: 0.78rem;
   color: var(--text-sub);
   line-height: 1.5;
   margin-bottom: 8px;
+}
+
+.yt-card-actions {
+  display: flex;
+  gap: 8px;
+  align-items: flex-end;
+}
+
+.yt-vote-inline {
+  flex: 1;
+  min-width: 0;
+}
+
+.yt-detail-btn {
+  flex-shrink: 0;
+  padding: 7px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-sub);
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.yt-detail-btn:hover {
+  background: #eff6ff;
+  border-color: #60a5fa;
+  color: #2563eb;
 }
 
 .yt-vote-bar-wrap {
@@ -1987,6 +2020,7 @@ body {
 
   .yt-thumb {
     aspect-ratio: 16 / 9;
+    min-height: 180px;
   }
 
   .yt-thumb-content {
@@ -1994,30 +2028,30 @@ body {
   }
 
   .yt-thumb-hook {
-    font-size: 0.6rem;
-    margin-bottom: 2px;
+    font-size: 0.7rem;
+    margin-bottom: 3px;
   }
 
   .yt-thumb-title {
-    font-size: 0.95rem;
-    line-height: 1.25;
+    font-size: 1.15rem;
+    line-height: 1.3;
   }
 
   .yt-thumb-title .yt-keyword,
   .yt-thumb-title .yt-keyword-red {
-    font-size: 1.05rem;
+    font-size: 1.25rem;
   }
 
   .yt-thumb-tag {
-    font-size: 0.52rem;
-    padding: 2px 6px;
+    font-size: 0.6rem;
+    padding: 3px 8px;
   }
 
   .yt-thumb-accent {
-    font-size: 0.5rem;
-    padding: 2px 6px;
-    top: 4px;
-    right: 4px;
+    font-size: 0.58rem;
+    padding: 3px 8px;
+    top: 6px;
+    right: 6px;
   }
 
   .yt-topic-body {
@@ -2045,6 +2079,15 @@ body {
   .yt-vote-btn {
     font-size: 0.72rem;
     padding: 5px 8px;
+  }
+
+  .yt-detail-btn {
+    padding: 5px 10px;
+    font-size: 0.7rem;
+  }
+
+  .yt-card-actions {
+    gap: 6px;
   }
 }
 
