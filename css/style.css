@@ -2352,6 +2352,145 @@ body {
   width: auto;
   vertical-align: middle;
   margin-right: 4px;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.logo-mascot:hover {
+  transform: scale(1.15);
+}
+
+/* よな坊プロフィールモーダル */
+.yonabo-profile {
+  background: #fff;
+  border-radius: 16px;
+  max-width: 440px;
+  width: 92%;
+  max-height: 85vh;
+  overflow-y: auto;
+  position: relative;
+  box-shadow: 0 16px 48px rgba(0,0,0,0.2);
+  -webkit-overflow-scrolling: touch;
+}
+
+.yonabo-profile-hero {
+  background: linear-gradient(135deg, #e8f4f8 0%, #fef9ef 50%, #fce4ec 100%);
+  text-align: center;
+  padding: 32px 20px 16px;
+  border-radius: 16px 16px 0 0;
+}
+
+.yonabo-profile-img {
+  width: 140px;
+  height: auto;
+  filter: drop-shadow(0 4px 12px rgba(0,0,0,0.1));
+}
+
+.yonabo-profile-body {
+  padding: 20px 24px 28px;
+}
+
+.yonabo-profile-name {
+  font-size: 1.8rem;
+  font-weight: 900;
+  text-align: center;
+  margin-bottom: 2px;
+  color: #1e293b;
+}
+
+.yonabo-profile-ruby {
+  text-align: center;
+  font-size: 0.8rem;
+  color: #94a3b8;
+  margin-bottom: 8px;
+}
+
+.yonabo-profile-role {
+  text-align: center;
+  font-size: 0.78rem;
+  color: #64748b;
+  background: #f1f5f9;
+  padding: 6px 14px;
+  border-radius: 20px;
+  display: inline-block;
+  margin: 0 auto 20px;
+  width: 100%;
+}
+
+.yonabo-profile-section {
+  margin-bottom: 20px;
+}
+
+.yonabo-profile-section h3 {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin-bottom: 12px;
+  padding-bottom: 6px;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+.yonabo-detail-row {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 12px;
+  align-items: flex-start;
+}
+
+.yonabo-detail-icon {
+  font-size: 1.3rem;
+  flex-shrink: 0;
+  width: 28px;
+  text-align: center;
+  margin-top: 2px;
+}
+
+.yonabo-detail-row strong {
+  font-size: 0.85rem;
+  color: #334155;
+  display: block;
+  margin-bottom: 2px;
+}
+
+.yonabo-detail-row p {
+  font-size: 0.78rem;
+  color: #64748b;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.yonabo-gallery {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.yonabo-gallery-item {
+  text-align: center;
+}
+
+.yonabo-gallery-item img {
+  width: 72px;
+  height: auto;
+  filter: drop-shadow(0 2px 6px rgba(0,0,0,0.08));
+}
+
+.yonabo-gallery-item span {
+  display: block;
+  font-size: 0.68rem;
+  color: #94a3b8;
+  margin-top: 4px;
+  font-weight: 600;
+}
+
+.yonabo-profile-footer {
+  font-size: 0.72rem;
+  color: #94a3b8;
+  text-align: center;
+  line-height: 1.6;
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid #e2e8f0;
 }
 
 .hint-mascot {

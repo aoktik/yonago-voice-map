@@ -268,6 +268,16 @@ function initUI() {
     if (e.target === this) closeTopicDetail();
   });
 
+  // よな坊プロフィールモーダル
+  document.getElementById('logoMascot').addEventListener('click', openYonaboProfile);
+  document.getElementById('logoMascot').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openYonaboProfile(); }
+  });
+  document.getElementById('closeYonaboProfile').addEventListener('click', closeYonaboProfile);
+  document.getElementById('yonaboProfileOverlay').addEventListener('click', function(e) {
+    if (e.target === this) closeYonaboProfile();
+  });
+
   // Cookie consent events
   var cookieAcceptBtn = document.getElementById('cookieAccept');
   var cookieDeclineBtn = document.getElementById('cookieDecline');
@@ -1708,6 +1718,15 @@ function openTopicDetail(topicId) {
 
 function closeTopicDetail() {
   document.getElementById('topicDetailOverlay').classList.remove('active');
+}
+
+// === よな坊プロフィール ===
+function openYonaboProfile() {
+  document.getElementById('yonaboProfileOverlay').classList.add('active');
+}
+
+function closeYonaboProfile() {
+  document.getElementById('yonaboProfileOverlay').classList.remove('active');
 }
 
 async function voteTopic(topicId, vote) {
