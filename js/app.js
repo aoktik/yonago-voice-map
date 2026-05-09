@@ -970,15 +970,56 @@ function formatDate(isoStr) {
 }
 
 // === YouTube Topics ===
-var TOPIC_COLORS = {
-  traffic: ['#dc2626', '#991b1b'],
-  shop: ['#d97706', '#92400e'],
-  transport: ['#0284c7', '#075985'],
-  medical: ['#7c3aed', '#5b21b6'],
-  idea: ['#475569', '#1e293b'],
-  nature: ['#059669', '#065f46'],
-  child: ['#db2777', '#9d174d'],
-  infra: ['#7c3aed', '#4c1d95'],
+// ReHacQ/PIVOT style thumbnail designs per topic
+var TOPIC_DESIGNS = {
+  topic_01: {
+    bg: 'linear-gradient(135deg, #1a0a00 0%, #7c2d12 40%, #ea580c 100%)',
+    overlay: 'linear-gradient(180deg, rgba(0,0,0,0.2) 0%, rgba(120,40,0,0.6) 100%)',
+    hook: '温泉街のリアル',
+    titleHtml: '皆生温泉は<span class="yt-keyword">復活</span>できるのか？',
+    accent: '徹底討論',
+    stripe: 'linear-gradient(90deg, #ea580c, #fbbf24)',
+  },
+  topic_02: {
+    bg: 'linear-gradient(135deg, #0f172a 0%, #1e3a5f 40%, #dc2626 100%)',
+    overlay: 'linear-gradient(180deg, rgba(0,0,0,0.3) 0%, rgba(30,20,60,0.7) 100%)',
+    hook: '通勤ラッシュの闇',
+    titleHtml: '米子の<span class="yt-keyword-red">渋滞</span>、なぜ解消されない？',
+    accent: '激白',
+    stripe: 'linear-gradient(90deg, #dc2626, #f59e0b)',
+  },
+  topic_03: {
+    bg: 'linear-gradient(135deg, #0c4a6e 0%, #0369a1 40%, #0ea5e9 100%)',
+    overlay: 'linear-gradient(180deg, rgba(0,0,0,0.2) 0%, rgba(0,50,80,0.6) 100%)',
+    hook: '1時間に1本…市民の本音',
+    titleHtml: 'だんだんバス、<br>本当に<span class="yt-keyword">使える</span>の？',
+    accent: 'なぜ？',
+    stripe: 'linear-gradient(90deg, #0ea5e9, #38bdf8)',
+  },
+  topic_04: {
+    bg: 'linear-gradient(135deg, #1c1917 0%, #78350f 40%, #d97706 100%)',
+    overlay: 'linear-gradient(180deg, rgba(0,0,0,0.3) 0%, rgba(60,30,0,0.6) 100%)',
+    hook: 'TSUTAYA閉店、天満屋撤退…',
+    titleHtml: '角盤町商店街は<br><span class="yt-keyword-red">生き残れる</span>か',
+    accent: '衝撃',
+    stripe: 'linear-gradient(90deg, #d97706, #fbbf24)',
+  },
+  topic_05: {
+    bg: 'linear-gradient(135deg, #0f172a 0%, #334155 40%, #475569 100%)',
+    overlay: 'linear-gradient(180deg, rgba(0,0,0,0.3) 0%, rgba(20,20,40,0.7) 100%)',
+    hook: '人口14万人割れ目前',
+    titleHtml: '米子から若者が<br><span class="yt-keyword-red">消える</span>本当の理由',
+    accent: '大激論',
+    stripe: 'linear-gradient(90deg, #ef4444, #8b5cf6)',
+  },
+  topic_06: {
+    bg: 'linear-gradient(135deg, #1e1b4b 0%, #4c1d95 40%, #7c3aed 100%)',
+    overlay: 'linear-gradient(180deg, rgba(0,0,0,0.2) 0%, rgba(40,10,80,0.6) 100%)',
+    hook: '内科クリニック3件の現実',
+    titleHtml: '弓ヶ浜に<span class="yt-keyword-red">病院がない</span>問題',
+    accent: '衝撃事実',
+    stripe: 'linear-gradient(90deg, #7c3aed, #ec4899)',
+  },
 };
 
 function renderYoutubeTopics() {
@@ -992,7 +1033,14 @@ function renderYoutubeTopics() {
 
   container.innerHTML = '';
   youtubeTopics.forEach(function(topic) {
-    var colors = TOPIC_COLORS[topic.category] || TOPIC_COLORS.idea;
+    var design = TOPIC_DESIGNS[topic.id] || {
+      bg: 'linear-gradient(135deg, #1e293b, #475569)',
+      overlay: 'linear-gradient(180deg, rgba(0,0,0,0.3), rgba(0,0,0,0.6))',
+      hook: '',
+      titleHtml: escapeHtml(topic.title),
+      accent: '討論',
+      stripe: 'linear-gradient(90deg, #ef4444, #f59e0b)',
+    };
     var cat = CATEGORIES.find(function(c) { return c.id === topic.category; });
     var userVote = topicVotes[topic.id] || null;
     var total = topic.likes + topic.dislikes;
@@ -1002,10 +1050,16 @@ function renderYoutubeTopics() {
     card.className = 'yt-topic-card';
 
     card.innerHTML =
-      '<div class="yt-thumb" style="background:linear-gradient(135deg,' + colors[0] + ',' + colors[1] + ')">' +
-        '<div class="yt-thumb-cat">' + (cat ? cat.emoji + ' ' + cat.name : '') + '</div>' +
-        '<div class="yt-thumb-title">' + escapeHtml(topic.title) + '</div>' +
-        '<div class="yt-thumb-play">▶</div>' +
+      '<div class="yt-thumb">' +
+        '<div class="yt-thumb-bg" style="background:' + design.bg + '"></div>' +
+        '<div class="yt-thumb-overlay" style="background:' + design.overlay + '"></div>' +
+        '<div class="yt-thumb-tag" style="background:' + (cat ? cat.color : '#666') + '">' + (cat ? cat.emoji + ' ' + cat.name : '') + '</div>' +
+        '<div class="yt-thumb-accent">' + design.accent + '</div>' +
+        '<div class="yt-thumb-content">' +
+          '<div class="yt-thumb-hook">' + design.hook + '</div>' +
+          '<div class="yt-thumb-title">' + design.titleHtml + '</div>' +
+        '</div>' +
+        '<div class="yt-thumb-stripe" style="background:' + design.stripe + '"></div>' +
       '</div>' +
       '<div class="yt-topic-body">' +
         '<p class="yt-topic-subtitle">' + escapeHtml(topic.subtitle || '') + '</p>' +
@@ -1022,7 +1076,6 @@ function renderYoutubeTopics() {
         '</div>' +
       '</div>';
 
-    // Vote button listeners
     card.querySelectorAll('.yt-vote-btn').forEach(function(btn) {
       btn.addEventListener('click', function(e) {
         e.stopPropagation();
