@@ -150,7 +150,8 @@ async function migrateLocalStorageToSupabase() {
 }
 
 function initMap() {
-  map = L.map('map', { zoomControl: true }).setView([35.428, 133.331], 14);
+  map = L.map('map', { zoomControl: false }).setView([35.428, 133.331], 14);
+  L.control.zoom({ position: 'bottomright' }).addTo(map);
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
     maxZoom: 19,
