@@ -1359,6 +1359,8 @@ body {
   flex-direction: column;
   overflow: hidden;
   flex: 1;
+  -webkit-flex: 1;
+  min-height: 0;
 }
 
 .sidebar-panel.active {
@@ -1375,11 +1377,14 @@ body {
 
 .youtube-topics-list {
   flex: 1;
+  -webkit-flex: 1;
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
   padding: 12px;
   display: flex;
   flex-direction: column;
   gap: 14px;
+  min-height: 0;
 }
 
 /* YouTube topic card - ReHacQ/PIVOT style */
@@ -1389,17 +1394,27 @@ body {
   box-shadow: 0 4px 16px rgba(0,0,0,0.15);
   background: var(--surface);
   flex-shrink: 0;
+  -webkit-flex-shrink: 0;
+  height: auto !important;
+  min-height: 0;
 }
 
 .yt-thumb {
   position: relative;
-  padding: 0;
   overflow: hidden;
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
   aspect-ratio: 16 / 9;
   min-height: 200px;
+  /* iOS Safari fallback for aspect-ratio */
+  padding: 0;
+}
+
+@supports not (aspect-ratio: 16 / 9) {
+  .yt-thumb {
+    padding-top: 56.25%;
+  }
 }
 
 .yt-thumb-bg {
