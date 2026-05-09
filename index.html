@@ -54,10 +54,20 @@
         <button class="dashboard-close" id="closeDashboard">✕</button>
       </div>
 
+      <!-- サイト活動サマリー -->
+      <div class="dashboard-summary" id="dashboardSummary"></div>
+
+      <div class="dashboard-section-title">📋 投稿データ分析</div>
       <div class="dashboard-grid">
         <section class="dashboard-card">
           <h3>カテゴリ別 投稿数</h3>
           <div id="categoryChart" class="category-chart"></div>
+        </section>
+
+        <section class="dashboard-card">
+          <h3>✅ 改善達成状況</h3>
+          <p class="card-desc">市民の声がどれだけ改善されたか</p>
+          <div id="resolvedChart"></div>
         </section>
 
         <section class="dashboard-card">
@@ -66,10 +76,49 @@
           <ol id="topRanking" class="top-ranking"></ol>
         </section>
 
+        <section class="dashboard-card">
+          <h3>🏆 改善された声 TOP3</h3>
+          <p class="card-desc">実際に改善につながった声</p>
+          <div id="resolvedRanking"></div>
+        </section>
+
+        <section class="dashboard-card wide">
+          <h3>📈 月別投稿数の推移</h3>
+          <p class="card-desc">いつ声が集まっているか</p>
+          <div id="monthlyChart" class="monthly-chart"></div>
+        </section>
+
         <section class="dashboard-card wide">
           <h3>💬 今週のホットトピック</h3>
           <p class="card-desc">直近の注目エリア・テーマをピックアップ</p>
           <div id="hotTopics" class="hot-topics"></div>
+        </section>
+      </div>
+
+      <div class="dashboard-section-title">🏙 米子市データ</div>
+      <div class="dashboard-grid">
+        <section class="dashboard-card">
+          <h3>👥 米子市の人口推移</h3>
+          <p class="card-desc">国勢調査・推計人口より</p>
+          <div id="populationChart" class="monthly-chart"></div>
+        </section>
+
+        <section class="dashboard-card">
+          <h3>🏥 エリア別 医療施設数</h3>
+          <p class="card-desc">内科・小児科クリニック</p>
+          <div id="medicalChart"></div>
+        </section>
+
+        <section class="dashboard-card">
+          <h3>🚌 公共交通データ</h3>
+          <p class="card-desc">だんだんバス・路線バスの現状</p>
+          <div id="transportData"></div>
+        </section>
+
+        <section class="dashboard-card">
+          <h3>🏪 商業施設の動向</h3>
+          <p class="card-desc">近年の出店・閉店</p>
+          <div id="shopData"></div>
         </section>
       </div>
     </div>

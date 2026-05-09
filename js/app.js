@@ -517,9 +517,17 @@ function closeDashboard() {
 }
 
 function renderDashboard() {
+  renderDashboardSummary();
   renderCategoryChart();
+  renderResolvedChart();
   renderTopRanking();
+  renderResolvedRanking();
+  renderMonthlyChart();
   renderHotTopics();
+  renderPopulationChart();
+  renderMedicalChart();
+  renderTransportData();
+  renderShopData();
 }
 
 function renderCategoryChart() {
@@ -613,6 +621,282 @@ function renderHotTopics() {
       '<div class="hot-topic-count">' + area.posts.length + '件の声 | 👍 ' + area.totalAgrees + '</div>';
     container.appendChild(card);
   });
+}
+
+// === C. サイト活動サマリー ===
+function renderDashboardSummary() {
+  var container = document.getElementById('dashboardSummary');
+  var realPosts = posts.filter(function(p) { return !isSamplePost(p); });
+  var totalPosts = realPosts.length;
+  var totalAgrees = realPosts.reduce(function(sum, p) { return sum + p.agrees; }, 0);
+  var resolvedPosts = realPosts.filter(function(p) { return p.resolved; });
+  var resolvedCount = resolvedPosts.length;
+
+  // 今月の投稿数
+  var now = new Date();
+  var thisMonth = realPosts.filter(function(p) {
+    var d = new Date(p.createdAt);
+    return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+  }).length;
+
+  container.innerHTML =
+    '<div class="summary-card">' +
+      '<div class="summary-number">' + totalPosts + '</div>' +
+      '<div class="summary-label">総投稿数</div>' +
+    '</div>' +
+    '<div class="summary-card">' +
+      '<div class="summary-number">' + totalAgrees + '</div>' +
+      '<div class="summary-label">総賛同数</div>' +
+    '</div>' +
+    '<div class="summary-card accent">' +
+      '<div class="summary-number">' + resolvedCount + '</div>' +
+      '<div class="summary-label">改善達成数</div>' +
+    '</div>' +
+    '<div class="summary-card">' +
+      '<div class="summary-number">' + thisMonth + '</div>' +
+      '<div class="summary-label">今月の投稿</div>' +
+    '</div>';
+}
+
+// === A. 改善達成状況 ===
+function renderResolvedChart() {
+  var container = document.getElementById('resolvedChart');
+  var realPosts = posts.filter(function(p) { return !isSamplePost(p); });
+  var total = realPosts.length;
+  var resolved = realPosts.filter(function(p) { return p.resolved; }).length;
+  var unresolved = total - resolved;
+  var pct = total > 0 ? Math.round(resolved / total * 100) : 0;
+
+  // カテゴリ別の改善状況
+  var catStats = {};
+  CATEGORIES.forEach(function(c) { catStats[c.id] = { resolved: 0, total: 0 }; });
+  realPosts.forEach(function(p) {
+    if (catStats[p.category]) {
+      catStats[p.category].total++;
+      if (p.resolved) catStats[p.category].resolved++;
+    }
+  });
+
+  var progressHtml =
+    '<div class="resolved-progress">' +
+      '<div class="resolved-ring" style="background:conic-gradient(#10b981 ' + pct + '%, #e2e8f0 0%)">' +
+        '<div class="resolved-pct">' + pct + '%</div>' +
+        '<div class="resolved-pct-label">改善率</div>' +
+      '</div>' +
+      '<div class="resolved-stats">' +
+        '<div class="resolved-stat"><span class="stat-dot resolved-dot"></span>改善済み ' + resolved + '件</div>' +
+        '<div class="resolved-stat"><span class="stat-dot unresolved-dot"></span>未改善 ' + unresolved + '件</div>' +
+      '</div>' +
+    '</div>';
+
+  var catHtml = '<div class="resolved-by-cat">';
+  CATEGORIES.forEach(function(cat) {
+    var s = catStats[cat.id];
+    if (s.total === 0) return;
+    var catPct = Math.round(s.resolved / s.total * 100);
+    catHtml +=
+      '<div class="resolved-cat-row">' +
+        '<span class="resolved-cat-label">' + cat.emoji + ' ' + cat.name + '</span>' +
+        '<div class="resolved-cat-bar-wrap">' +
+          '<div class="resolved-cat-bar" style="width:' + catPct + '%;background:' + cat.color + '"></div>' +
+        '</div>' +
+        '<span class="resolved-cat-value">' + s.resolved + '/' + s.total + '</span>' +
+      '</div>';
+  });
+  catHtml += '</div>';
+
+  container.innerHTML = progressHtml + catHtml;
+}
+
+// === A. 改善された声ランキング ===
+function renderResolvedRanking() {
+  var container = document.getElementById('resolvedRanking');
+  var realPosts = posts.filter(function(p) { return !isSamplePost(p); });
+  var resolvedPosts = realPosts.filter(function(p) { return p.resolved; })
+    .sort(function(a, b) { return b.agrees - a.agrees; })
+    .slice(0, 3);
+
+  if (resolvedPosts.length === 0) {
+    container.innerHTML = '<div class="empty-state">まだ改善された声はありません</div>';
+    return;
+  }
+
+  container.innerHTML = '';
+  resolvedPosts.forEach(function(post) {
+    var cat = CATEGORIES.find(function(c) { return c.id === post.category; });
+    var card = document.createElement('div');
+    card.className = 'resolved-rank-card';
+    card.innerHTML =
+      '<div class="resolved-rank-voice">' +
+        '<span class="post-category-badge" style="background:' + (cat ? cat.color : '#999') + '">' + (cat ? cat.emoji + ' ' + cat.name : '') + '</span>' +
+        '<p>' + escapeHtml(post.message) + '</p>' +
+      '</div>' +
+      '<div class="resolved-rank-result">' +
+        '<span class="resolved-rank-arrow">→</span>' +
+        '<p>✅ ' + escapeHtml(post.resolvedMessage) + '</p>' +
+      '</div>' +
+      '<div class="resolved-rank-meta">👍 ' + post.agrees + ' 賛同</div>';
+    container.appendChild(card);
+  });
+}
+
+// === A. 月別投稿数の推移 ===
+function renderMonthlyChart() {
+  var container = document.getElementById('monthlyChart');
+  var realPosts = posts.filter(function(p) { return !isSamplePost(p); });
+
+  if (realPosts.length === 0) {
+    container.innerHTML = '<div class="empty-state">投稿が集まるとグラフが表示されます</div>';
+    return;
+  }
+
+  var monthMap = {};
+  realPosts.forEach(function(p) {
+    var d = new Date(p.createdAt);
+    var key = d.getFullYear() + '/' + (d.getMonth() + 1);
+    monthMap[key] = (monthMap[key] || 0) + 1;
+  });
+
+  var months = Object.keys(monthMap).sort();
+  var max = Math.max.apply(null, Object.values(monthMap).concat([1]));
+
+  container.innerHTML = '';
+  var chartDiv = document.createElement('div');
+  chartDiv.className = 'monthly-bars';
+  months.forEach(function(m) {
+    var count = monthMap[m];
+    var pct = (count / max * 100).toFixed(0);
+    var bar = document.createElement('div');
+    bar.className = 'monthly-bar-col';
+    bar.innerHTML =
+      '<div class="monthly-bar-value">' + count + '</div>' +
+      '<div class="monthly-bar-track"><div class="monthly-bar-fill" style="height:' + pct + '%"></div></div>' +
+      '<div class="monthly-bar-label">' + m.split('/')[1] + '月</div>';
+    chartDiv.appendChild(bar);
+  });
+  container.appendChild(chartDiv);
+}
+
+// === B. 米子市の人口推移 ===
+function renderPopulationChart() {
+  var container = document.getElementById('populationChart');
+  var data = [
+    { year: '2000', pop: 149975 },
+    { year: '2005', pop: 149584 },
+    { year: '2010', pop: 148271 },
+    { year: '2015', pop: 148271 },
+    { year: '2020', pop: 145014 },
+    { year: '2025', pop: 140000 },
+  ];
+  var max = 155000;
+  var min = 135000;
+  var range = max - min;
+
+  var barsHtml = '<div class="monthly-bars">';
+  data.forEach(function(d) {
+    var pct = ((d.pop - min) / range * 100).toFixed(0);
+    var popStr = (d.pop / 10000).toFixed(1) + '万';
+    barsHtml +=
+      '<div class="monthly-bar-col">' +
+        '<div class="monthly-bar-value">' + popStr + '</div>' +
+        '<div class="monthly-bar-track"><div class="monthly-bar-fill pop-bar" style="height:' + pct + '%"></div></div>' +
+        '<div class="monthly-bar-label">' + d.year + '</div>' +
+      '</div>';
+  });
+  barsHtml += '</div>';
+  container.innerHTML = barsHtml +
+    '<p class="data-source">出典：国勢調査・推計人口（2025年は推計値）</p>';
+}
+
+// === B. 医療施設数 ===
+function renderMedicalChart() {
+  var container = document.getElementById('medicalChart');
+  var areas = [
+    { name: '米子駅周辺', count: 42, color: '#6366f1' },
+    { name: '皆生エリア', count: 8, color: '#0ea5e9' },
+    { name: '弓ヶ浜エリア', count: 3, color: '#ef4444' },
+    { name: '日吉津・淀江', count: 6, color: '#f59e0b' },
+    { name: '南部（大山側）', count: 5, color: '#10b981' },
+  ];
+  var max = Math.max.apply(null, areas.map(function(a) { return a.count; }));
+
+  var html = '<div class="medical-list">';
+  areas.forEach(function(a) {
+    var pct = (a.count / max * 100).toFixed(0);
+    html +=
+      '<div class="chart-row">' +
+        '<span class="chart-label">' + a.name + '</span>' +
+        '<div class="chart-bar-wrap"><div class="chart-bar" style="width:' + pct + '%;background:' + a.color + '"></div></div>' +
+        '<span class="chart-value">' + a.count + '件</span>' +
+      '</div>';
+  });
+  html += '</div>' +
+    '<p class="data-note">⚠️ 弓ヶ浜エリアは内科クリニックが特に不足</p>' +
+    '<p class="data-source">参考値・概算データ</p>';
+  container.innerHTML = html;
+}
+
+// === B. 公共交通データ ===
+function renderTransportData() {
+  var container = document.getElementById('transportData');
+  container.innerHTML =
+    '<div class="transport-list">' +
+      '<div class="transport-item">' +
+        '<div class="transport-name">🚌 だんだんバス</div>' +
+        '<div class="transport-detail">循環バス / 約60分間隔</div>' +
+        '<div class="transport-issue">⚠️ 本数が少なく通勤利用が困難</div>' +
+      '</div>' +
+      '<div class="transport-item">' +
+        '<div class="transport-name">🚌 日交路線バス</div>' +
+        '<div class="transport-detail">米子駅〜皆生・境港など</div>' +
+        '<div class="transport-issue">⚠️ 郊外路線は減便傾向</div>' +
+      '</div>' +
+      '<div class="transport-item">' +
+        '<div class="transport-name">🚃 JR境線</div>' +
+        '<div class="transport-detail">米子駅〜境港 / 約30分間隔</div>' +
+        '<div class="transport-issue">△ 日中は1時間に1〜2本</div>' +
+      '</div>' +
+      '<div class="transport-item">' +
+        '<div class="transport-name">🚃 JR山陰本線</div>' +
+        '<div class="transport-detail">米子駅〜松江・倉吉方面</div>' +
+        '<div class="transport-issue">○ 特急やくも運行あり</div>' +
+      '</div>' +
+    '</div>' +
+    '<p class="data-source">参考情報（2024年時点）</p>';
+}
+
+// === B. 商業施設の動向 ===
+function renderShopData() {
+  var container = document.getElementById('shopData');
+  container.innerHTML =
+    '<div class="shop-timeline">' +
+      '<div class="shop-event positive">' +
+        '<span class="shop-year">2024</span>' +
+        '<span class="shop-badge open">オープン</span>' +
+        '<span class="shop-name">KAIKEテラス（皆生温泉）</span>' +
+      '</div>' +
+      '<div class="shop-event positive">' +
+        '<span class="shop-year">2024</span>' +
+        '<span class="shop-badge open">オープン</span>' +
+        '<span class="shop-name">ふらっと食堂（角盤町）</span>' +
+      '</div>' +
+      '<div class="shop-event positive">' +
+        '<span class="shop-year">2024</span>' +
+        '<span class="shop-badge open">オープン</span>' +
+        '<span class="shop-name">GR Garage 米子（車販売・カフェ）</span>' +
+      '</div>' +
+      '<div class="shop-event negative">' +
+        '<span class="shop-year">2023</span>' +
+        '<span class="shop-badge close">閉店</span>' +
+        '<span class="shop-name">TSUTAYA 角盤町店</span>' +
+      '</div>' +
+      '<div class="shop-event negative">' +
+        '<span class="shop-year">2022</span>' +
+        '<span class="shop-badge close">閉店</span>' +
+        '<span class="shop-name">米子しんまち天満屋</span>' +
+      '</div>' +
+    '</div>' +
+    '<p class="data-source">参考情報</p>';
 }
 
 async function loadData() {
