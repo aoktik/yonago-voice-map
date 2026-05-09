@@ -474,14 +474,51 @@ function renderFilterButtons() {
 }
 
 function openPostForm(latlng) {
-  document.getElementById('formLocation').textContent =
-    '📍 緯度: ' + latlng.lat.toFixed(5) + ' / 経度: ' + latlng.lng.toFixed(5);
+  var locationEl = document.getElementById('formLocation');
+  locationEl.textContent = '📍 場所を取得中...';
+  reverseGeocode(latlng.lat, latlng.lng, function(address) {
+    locationEl.textContent = '📍 ' + address;
+  });
   document.getElementById('nickname').value = '';
   document.getElementById('message').value = '';
   document.getElementById('charCount').textContent = '0/200';
   selectedCategory = null;
   document.querySelectorAll('.category-option').forEach(function(el) { el.classList.remove('selected'); });
   document.getElementById('postFormOverlay').classList.add('active');
+}
+
+function reverseGeocode(lat, lng, callback) {
+  var url = 'https://nominatim.openstreetmap.org/reverse?format=json&lat=' +
+    lat + '&lon=' + lng + '&zoom=18&addressdetails=1&accept-language=ja';
+  fetch(url, {
+    headers: { 'User-Agent': 'YonagoVoiceMap/1.0' }
+  })
+  .then(function(res) { return res.json(); })
+  .then(function(data) {
+    if (data && data.address) {
+      var addr = data.address;
+      var parts = [];
+      // 町名・番地レベルの表示
+      if (addr.neighbourhood) parts.push(addr.neighbourhood);
+      else if (addr.quarter) parts.push(addr.quarter);
+      else if (addr.suburb) parts.push(addr.suburb);
+      // 近くの施設名があれば「〇〇付近」
+      if (data.name && data.name !== parts[0]) {
+        callback(data.name + ' 付近');
+      } else if (parts.length > 0) {
+        callback('米子市 ' + parts[0] + ' 付近');
+      } else if (addr.city || addr.town) {
+        callback((addr.city || addr.town) + ' 付近');
+      } else {
+        callback('米子市内');
+      }
+    } else {
+      callback('米子市内');
+    }
+  })
+  .catch(function() {
+    callback('米子市内');
+  });
 }
 
 function closePostForm() {
