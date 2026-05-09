@@ -1,3 +1,6 @@
+// GA4 safe wrapper (avoids crash if gtag not loaded)
+if (typeof gtag === 'undefined') { window.gtag = function() {}; }
+
 var SUPABASE_URL = 'https://pqnuxkdfegydungyfnsq.supabase.co';
 var SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBxbnV4a2RmZWd5ZHVuZ3lmbnNxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgyNzUyMTgsImV4cCI6MjA5Mzg1MTIxOH0.exGLJP3uiCvLzyOhKrsxeDpXgdQyllBXjL5n8HASB7c';
 
