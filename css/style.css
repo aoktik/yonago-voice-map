@@ -1708,6 +1708,105 @@ body {
   border-color: #10b981;
 }
 
+/* Topic detail modal */
+.topic-detail-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 2000;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+}
+
+.topic-detail-overlay.active {
+  display: flex;
+}
+
+.topic-detail-modal {
+  background: var(--surface);
+  border-radius: var(--radius);
+  width: 100%;
+  max-width: 480px;
+  box-shadow: var(--shadow-lg);
+  overflow: hidden;
+  position: relative;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.topic-detail-close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 10;
+  background: rgba(0,0,0,0.5);
+  color: white;
+  border: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.topic-detail-close:hover {
+  background: rgba(0,0,0,0.7);
+}
+
+.topic-detail-thumb-wrap .yt-thumb {
+  cursor: default;
+}
+
+.topic-detail-body {
+  padding: 20px;
+}
+
+.topic-detail-summary {
+  font-size: 0.9rem;
+  line-height: 1.8;
+  color: var(--text);
+  margin-bottom: 16px;
+}
+
+.topic-detail-note-link {
+  display: block;
+  text-align: center;
+  background: #41C9B4;
+  color: white;
+  text-decoration: none;
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  margin-bottom: 16px;
+  transition: background 0.2s;
+}
+
+.topic-detail-note-link:hover {
+  background: #35a897;
+}
+
+.topic-detail-vote {
+  border-top: 1px solid var(--border);
+  padding-top: 12px;
+}
+
+/* Thumbnail tap feedback */
+.yt-thumb {
+  cursor: pointer;
+  transition: filter 0.2s;
+}
+
+.yt-thumb:hover {
+  filter: brightness(1.08);
+}
+
 /* Leaflet popup customization */
 .leaflet-popup-content-wrapper {
   border-radius: 10px !important;

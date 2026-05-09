@@ -197,6 +197,12 @@ function initUI() {
   document.getElementById('approveReport').addEventListener('click', function() { processReport('approve'); });
   document.getElementById('rejectReport').addEventListener('click', function() { processReport('reject'); });
 
+  // Topic detail modal events
+  document.getElementById('closeTopicDetail').addEventListener('click', closeTopicDetail);
+  document.getElementById('topicDetailOverlay').addEventListener('click', function(e) {
+    if (e.target === this) closeTopicDetail();
+  });
+
   var msgInput = document.getElementById('message');
   msgInput.addEventListener('input', function() {
     document.getElementById('charCount').textContent = this.value.length + '/200';
@@ -1341,14 +1347,18 @@ var TOPIC_DESIGNS = {
     titleHtml: '皆生温泉は<span class="yt-keyword">復活</span>できるのか？',
     accent: '徹底討論',
     stripe: 'linear-gradient(90deg, #ea580c, #fbbf24)',
+    summary: 'かつて山陰屈指の温泉街として栄えた皆生温泉。しかし近年は旅館の廃業が相次ぎ、空き建物が目立つように。一方でKAIKEテラスなど新しい動きも。温泉街は「観光地」として再生すべきか、「住民の暮らしの場」として進化すべきか？ データと市民の声から皆生の未来を討論します。',
+    noteUrl: '',
   },
   topic_02: {
     photo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/7/77/Yonago_station_South_exit.jpg/960px-Yonago_station_South_exit.jpg',
     overlay: 'linear-gradient(180deg, rgba(0,0,0,0.2) 0%, rgba(30,10,10,0.8) 100%)',
-    hook: '通勤ラッシュの闇',
+    hook: '通勤ラッシュの闘',
     titleHtml: '米子の<span class="yt-keyword-red">渋滞</span>、なぜ解消されない？',
     accent: '激白',
     stripe: 'linear-gradient(90deg, #dc2626, #f59e0b)',
+    summary: '431号線、日野川東IC付近、内浜産業道路——米子市民なら誰もが経験する朝夕の渋滞。付加車線の整備で一部改善されたものの、根本的な解決には至っていません。なぜ渋滞は解消されないのか？ 道路構造・信号制御・都市計画の観点から、市民の不満と改善策を掘り下げます。',
+    noteUrl: '',
   },
   topic_03: {
     photo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/7/77/Yonago_station_South_exit.jpg/960px-Yonago_station_South_exit.jpg',
@@ -1357,6 +1367,8 @@ var TOPIC_DESIGNS = {
     titleHtml: 'だんだんバス、<br>本当に<span class="yt-keyword">使える</span>の？',
     accent: 'なぜ？',
     stripe: 'linear-gradient(90deg, #0ea5e9, #38bdf8)',
+    summary: '米子市の循環バス「だんだんバス」。運賃150円で市内を回れる便利な存在のはずが、「本数が少なすぎる」「ルートが分かりにくい」と市民の不満は根強い。高齢者の足としても、若者の移動手段としても課題だらけ。利用者数データと市民の声から、公共交通のあるべき姿を考えます。',
+    noteUrl: '',
   },
   topic_04: {
     photo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/aa/Yonago_Takashimaya_ac.jpg/960px-Yonago_Takashimaya_ac.jpg',
@@ -1365,6 +1377,8 @@ var TOPIC_DESIGNS = {
     titleHtml: '角盤町商店街は<br><span class="yt-keyword-red">生き残れる</span>か',
     accent: '衝撃',
     stripe: 'linear-gradient(90deg, #d97706, #fbbf24)',
+    summary: '米子の中心市街地・角盤町。天満屋の撤退、TSUTAYA閉店と、象徴的な店舗が次々と姿を消しています。イオンモールや郊外店舗に客足を奪われる中、商店街に未来はあるのか？ 空き店舗率のデータ、新規出店の動き、そして商店街で商売する人たちのリアルな声を集めて討論します。',
+    noteUrl: '',
   },
   topic_05: {
     photo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/01/Yonago_Castle_01.JPG/960px-Yonago_Castle_01.JPG',
@@ -1373,6 +1387,8 @@ var TOPIC_DESIGNS = {
     titleHtml: '米子から若者が<br><span class="yt-keyword-red">消える</span>本当の理由',
     accent: '大激論',
     stripe: 'linear-gradient(90deg, #ef4444, #8b5cf6)',
+    summary: '米子市の人口は減少の一途。特に20代の県外流出が深刻で、日本海新聞の調査では20代の約7割が県外移住を考えているという結果も。「娯楽がない」「給料が低い」——若者が去る本当の理由は何か？ そして、残る選択をした若者たちは何を求めているのか？ データと当事者の声で迫ります。',
+    noteUrl: '',
   },
   topic_06: {
     photo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/f/f2/Mount_Daisen_2015-05-03_%2817214768368%29.jpg/960px-Mount_Daisen_2015-05-03_%2817214768368%29.jpg',
@@ -1381,6 +1397,8 @@ var TOPIC_DESIGNS = {
     titleHtml: '弓ヶ浜に<span class="yt-keyword-red">病院がない</span>問題',
     accent: '衝撃事実',
     stripe: 'linear-gradient(90deg, #7c3aed, #ec4899)',
+    summary: '弓ヶ浜半島エリアは人口密集地にもかかわらず、内科・小児科クリニックがわずか数件。子どもの急な発熱で米子市街地まで車を走らせる親たちの現実。医師不足？ 採算の問題？ 行政の対応は？ 住民アンケートと医療データから、地域医療の危機的状況を可視化します。',
+    noteUrl: '',
   },
 };
 
@@ -1438,6 +1456,10 @@ function renderYoutubeTopics() {
         '</div>' +
       '</div>';
 
+    card.querySelector('.yt-thumb').addEventListener('click', function() {
+      openTopicDetail(topic.id);
+    });
+
     card.querySelectorAll('.yt-vote-btn').forEach(function(btn) {
       btn.addEventListener('click', function(e) {
         e.stopPropagation();
@@ -1447,6 +1469,76 @@ function renderYoutubeTopics() {
 
     container.appendChild(card);
   });
+}
+
+function openTopicDetail(topicId) {
+  var topic = youtubeTopics.find(function(t) { return t.id === topicId; });
+  if (!topic) return;
+  var design = TOPIC_DESIGNS[topicId] || {};
+  var cat = CATEGORIES.find(function(c) { return c.id === topic.category; });
+  var userVote = topicVotes[topicId] || null;
+  var total = topic.likes + topic.dislikes;
+  var likePct = total > 0 ? Math.round(topic.likes / total * 100) : 0;
+
+  var noteLink = '';
+  if (design.noteUrl) {
+    noteLink =
+      '<a href="' + design.noteUrl + '" target="_blank" rel="noopener noreferrer" class="topic-detail-note-link">' +
+        '📝 noteで詳しく読む' +
+      '</a>';
+  }
+
+  var html =
+    '<div class="topic-detail-thumb-wrap">' +
+      '<div class="yt-thumb">' +
+        '<div class="yt-thumb-bg"' + (design.photo ? ' style="background-image:url(\'' + design.photo + '\')"' : '') + '></div>' +
+        '<div class="yt-thumb-overlay" style="background:' + (design.overlay || '') + '"></div>' +
+        '<div class="yt-thumb-tag" style="background:' + (cat ? cat.color : '#666') + '">' + (cat ? cat.emoji + ' ' + cat.name : '') + '</div>' +
+        '<div class="yt-thumb-accent">' + (design.accent || '討論') + '</div>' +
+        '<div class="yt-thumb-content">' +
+          '<div class="yt-thumb-hook">' + (design.hook || '') + '</div>' +
+          '<div class="yt-thumb-title">' + (design.titleHtml || escapeHtml(topic.title)) + '</div>' +
+        '</div>' +
+        '<div class="yt-thumb-stripe" style="background:' + (design.stripe || '') + '"></div>' +
+      '</div>' +
+    '</div>' +
+    '<div class="topic-detail-body">' +
+      '<p class="topic-detail-summary">' + escapeHtml(design.summary || topic.subtitle || '') + '</p>' +
+      noteLink +
+      '<div class="topic-detail-vote">' +
+        '<div class="yt-vote-bar-wrap">' +
+          '<div class="yt-vote-bar-fill" style="width:' + likePct + '%"></div>' +
+        '</div>' +
+        '<div class="yt-vote-actions">' +
+          '<button class="yt-vote-btn yt-like' + (userVote === 'like' ? ' voted' : '') + '" data-topic="' + topicId + '" data-vote="like">' +
+            '👍 見たい <span>' + topic.likes + '</span>' +
+          '</button>' +
+          '<button class="yt-vote-btn yt-dislike' + (userVote === 'dislike' ? ' voted' : '') + '" data-topic="' + topicId + '" data-vote="dislike">' +
+            '👎 <span>' + topic.dislikes + '</span>' +
+          '</button>' +
+        '</div>' +
+      '</div>' +
+    '</div>';
+
+  var content = document.getElementById('topicDetailContent');
+  content.innerHTML = html;
+
+  // Attach vote handlers in modal
+  content.querySelectorAll('.yt-vote-btn').forEach(function(btn) {
+    btn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      voteTopic(btn.dataset.topic, btn.dataset.vote);
+      // Re-render modal after vote
+      setTimeout(function() { openTopicDetail(topicId); }, 50);
+    });
+  });
+
+  document.getElementById('topicDetailOverlay').classList.add('active');
+  gtag('event', 'topic_detail_open', { topic_id: topicId });
+}
+
+function closeTopicDetail() {
+  document.getElementById('topicDetailOverlay').classList.remove('active');
 }
 
 async function voteTopic(topicId, vote) {
