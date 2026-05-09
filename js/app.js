@@ -266,6 +266,7 @@ async function doSearch() {
       }).addTo(map);
       searchMarker.bindPopup('<div class="search-result-popup">🔍 ' + escapeHtml(name) + '</div>').openPopup();
       map.setView([lat, lng], 16);
+      gtag('event', 'search', { search_term: query });
     } else {
       alert('「' + query + '」が見つかりませんでした。\n別のキーワードで試してみてください。');
     }
@@ -320,6 +321,7 @@ function initLocate() {
         }).addTo(map);
 
         map.setView([lat, lng], 16);
+        gtag('event', 'locate');
         btn.classList.remove('locating');
         btn.textContent = '📍';
       },
@@ -434,6 +436,7 @@ async function submitResolve() {
     });
 
     closeResolveForm();
+    gtag('event', 'resolve_report_submit');
     alert('📩 改善報告を送信しました！\n管理者が確認後、サイトに反映されます。');
   } catch (e) {
     console.error('Resolve report failed:', e);
@@ -503,6 +506,7 @@ async function processReport(action) {
     }
 
     closeApproveForm();
+    gtag('event', 'report_process', { action: action });
     renderPosts();
     renderMarkers();
     renderPendingReports();
@@ -667,6 +671,7 @@ async function submitPost() {
     renderPosts();
     renderMarkers();
     document.getElementById('mapHint').style.display = 'none';
+    gtag('event', 'post_submit', { category: selectedCategory });
   } catch (e) {
     alert('投稿に失敗しました。もう一度お試しください。');
     console.error(e);
@@ -842,9 +847,11 @@ async function toggleAgree(postId) {
   if (agreedSet.has(postId)) {
     agreedSet.delete(postId);
     post.agrees = Math.max(0, post.agrees - 1);
+    gtag('event', 'agree_toggle', { action: 'cancel' });
   } else {
     agreedSet.add(postId);
     post.agrees += 1;
+    gtag('event', 'agree_toggle', { action: 'agree' });
   }
 
   // Save agreed set to localStorage (per-user preference)
@@ -867,6 +874,7 @@ async function toggleAgree(postId) {
 }
 
 function openDashboard() {
+  gtag('event', 'dashboard_open');
   renderDashboard();
   document.getElementById('dashboardOverlay').classList.add('active');
 }
@@ -1463,6 +1471,7 @@ async function voteTopic(topicId, vote) {
   }
 
   localStorage.setItem('yonago_topic_votes', JSON.stringify(topicVotes));
+  gtag('event', 'topic_vote', { vote: vote });
   renderYoutubeTopics();
 
   try {
