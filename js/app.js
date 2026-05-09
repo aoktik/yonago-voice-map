@@ -152,8 +152,23 @@ async function migrateLocalStorageToSupabase() {
   }
 }
 
+// 米子市のおおよその境界
+var YONAGO_BOUNDS = L.latLngBounds(
+  L.latLng(35.35, 133.20),  // 南西
+  L.latLng(35.52, 133.45)   // 北東
+);
+
+function isInYonago(latlng) {
+  return YONAGO_BOUNDS.contains(latlng);
+}
+
 function initMap() {
-  map = L.map('map', { zoomControl: false }).setView([35.428, 133.331], 14);
+  map = L.map('map', {
+    zoomControl: false,
+    maxBounds: YONAGO_BOUNDS.pad(0.1),
+    maxBoundsViscosity: 0.8,
+    minZoom: 12,
+  }).setView([35.428, 133.331], 14);
   L.control.zoom({ position: 'bottomright' }).addTo(map);
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
@@ -161,6 +176,10 @@ function initMap() {
   }).addTo(map);
 
   map.on('click', function(e) {
+    if (!isInYonago(e.latlng)) {
+      alert('📍 米子市内の場所をクリックしてください');
+      return;
+    }
     pendingLatLng = e.latlng;
     openPostForm(e.latlng);
   });
