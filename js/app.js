@@ -973,7 +973,7 @@ function formatDate(isoStr) {
 // ReHacQ/PIVOT style thumbnail designs per topic
 var TOPIC_DESIGNS = {
   topic_01: {
-    photo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/f/fa/Kaike_onsen01n3200.jpg/640px-Kaike_onsen01n3200.jpg',
+    photo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/f/fa/Kaike_onsen01n3200.jpg/960px-Kaike_onsen01n3200.jpg',
     overlay: 'linear-gradient(180deg, rgba(0,0,0,0.15) 0%, rgba(120,40,0,0.75) 100%)',
     hook: '温泉街のリアル',
     titleHtml: '皆生温泉は<span class="yt-keyword">復活</span>できるのか？',
@@ -981,7 +981,7 @@ var TOPIC_DESIGNS = {
     stripe: 'linear-gradient(90deg, #ea580c, #fbbf24)',
   },
   topic_02: {
-    photo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/7/77/Yonago_station_South_exit.jpg/640px-Yonago_station_South_exit.jpg',
+    photo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/7/77/Yonago_station_South_exit.jpg/960px-Yonago_station_South_exit.jpg',
     overlay: 'linear-gradient(180deg, rgba(0,0,0,0.2) 0%, rgba(30,10,10,0.8) 100%)',
     hook: '通勤ラッシュの闇',
     titleHtml: '米子の<span class="yt-keyword-red">渋滞</span>、なぜ解消されない？',
@@ -989,7 +989,7 @@ var TOPIC_DESIGNS = {
     stripe: 'linear-gradient(90deg, #dc2626, #f59e0b)',
   },
   topic_03: {
-    photo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/7/77/Yonago_station_South_exit.jpg/640px-Yonago_station_South_exit.jpg',
+    photo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/7/77/Yonago_station_South_exit.jpg/960px-Yonago_station_South_exit.jpg',
     overlay: 'linear-gradient(180deg, rgba(0,20,50,0.3) 0%, rgba(0,40,80,0.8) 100%)',
     hook: '1時間に1本…市民の本音',
     titleHtml: 'だんだんバス、<br>本当に<span class="yt-keyword">使える</span>の？',
@@ -997,7 +997,7 @@ var TOPIC_DESIGNS = {
     stripe: 'linear-gradient(90deg, #0ea5e9, #38bdf8)',
   },
   topic_04: {
-    photo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/aa/Yonago_Takashimaya_ac.jpg/640px-Yonago_Takashimaya_ac.jpg',
+    photo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/aa/Yonago_Takashimaya_ac.jpg/960px-Yonago_Takashimaya_ac.jpg',
     overlay: 'linear-gradient(180deg, rgba(0,0,0,0.2) 0%, rgba(50,20,0,0.8) 100%)',
     hook: 'TSUTAYA閉店、天満屋撤退…',
     titleHtml: '角盤町商店街は<br><span class="yt-keyword-red">生き残れる</span>か',
@@ -1005,7 +1005,7 @@ var TOPIC_DESIGNS = {
     stripe: 'linear-gradient(90deg, #d97706, #fbbf24)',
   },
   topic_05: {
-    photo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/01/Yonago_Castle_01.JPG/640px-Yonago_Castle_01.JPG',
+    photo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/01/Yonago_Castle_01.JPG/960px-Yonago_Castle_01.JPG',
     overlay: 'linear-gradient(180deg, rgba(0,0,0,0.3) 0%, rgba(15,15,30,0.85) 100%)',
     hook: '人口14万人割れ目前',
     titleHtml: '米子から若者が<br><span class="yt-keyword-red">消える</span>本当の理由',
@@ -1013,7 +1013,7 @@ var TOPIC_DESIGNS = {
     stripe: 'linear-gradient(90deg, #ef4444, #8b5cf6)',
   },
   topic_06: {
-    photo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/f/f2/Mount_Daisen_2015-05-03_%2817214768368%29.jpg/640px-Mount_Daisen_2015-05-03_%2817214768368%29.jpg',
+    photo: 'https://upload.wikimedia.org/wikipedia/commons/thumb/f/f2/Mount_Daisen_2015-05-03_%2817214768368%29.jpg/960px-Mount_Daisen_2015-05-03_%2817214768368%29.jpg',
     overlay: 'linear-gradient(180deg, rgba(0,0,0,0.2) 0%, rgba(30,10,50,0.8) 100%)',
     hook: '内科クリニック3件の現実',
     titleHtml: '弓ヶ浜に<span class="yt-keyword-red">病院がない</span>問題',
