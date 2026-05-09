@@ -1,4 +1,7 @@
-const CATEGORIES = [
+var SUPABASE_URL = 'https://pqnuxkdfegydungyfnsq.supabase.co';
+var SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBxbnV4a2RmZWd5ZHVuZ3lmbnNxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgyNzUyMTgsImV4cCI6MjA5Mzg1MTIxOH0.exGLJP3uiCvLzyOhKrsxeDpXgdQyllBXjL5n8HASB7c';
+
+var CATEGORIES = [
   { id: 'traffic',   emoji: '🚗', name: '交通・渋滞',     color: '#ef4444' },
   { id: 'shop',      emoji: '🏪', name: '商業施設・誘致',  color: '#f59e0b' },
   { id: 'nature',    emoji: '🏞️', name: '環境・景観',      color: '#10b981' },
@@ -9,8 +12,49 @@ const CATEGORIES = [
   { id: 'idea',      emoji: '💡', name: 'その他提案',      color: '#64748b' },
 ];
 
-const STORAGE_KEY = 'yonago_voice_posts';
-const AGREED_KEY = 'yonago_voice_agreed';
+var VALID_CATEGORY_IDS = CATEGORIES.map(function(c) { return c.id; });
+
+var NG_WORDS = [
+  '死ね', '殺す', '殺せ', 'ころす', 'ころせ', 'しね',
+  'バカ', 'ばか', '馬鹿', 'アホ', 'あほ', '阿呆',
+  'クソ', 'くそ', '糞', 'カス', 'かす', 'ゴミ', 'ごみ',
+  'キモい', 'きもい', 'キモ', 'きも', 'ウザい', 'うざい', 'ウザ',
+  'ブス', 'ぶす', 'デブ', 'でぶ', 'ハゲ', 'はげ',
+  '消えろ', 'きえろ', '失せろ', 'うせろ',
+  'ムカつく', 'むかつく', 'イラつく', 'いらつく',
+  '嫌い', 'きらい', '大嫌い',
+  'クズ', 'くず', '屑',
+  'うんこ', 'うんち',
+  'ざまあ', 'ザマア', 'ざまぁ',
+  'ボケ', 'ぼけ',
+  'ガイジ', 'がいじ',
+  '障害者', '知障',
+  'チビ', 'ちび',
+  '在日', '反日',
+  '犯罪者',
+];
+
+var NG_PATTERNS = [
+  /[ぁ-んァ-ヶ一-龥a-zA-Z]+が悪い/,
+  /[ぁ-んァ-ヶ一-龥a-zA-Z]+のせい/,
+  /[ぁ-んァ-ヶ一-龥a-zA-Z]+は無能/,
+  /[ぁ-んァ-ヶ一-龥a-zA-Z]+やめろ/,
+  /[ぁ-んァ-ヶ一-龥a-zA-Z]+辞めろ/,
+  /[ぁ-んァ-ヶ一-龥a-zA-Z]+が嫌/,
+  /[ぁ-んァ-ヶ一-龥a-zA-Z]+なんか/,
+  /[ぁ-んァ-ヶ一-龥a-zA-Z]+ごとき/,
+  /市[長議].*無能/,
+  /市[長議].*やめ/,
+  /市[長議].*辞め/,
+  /誰.*得/,
+  /税金.*無駄/,
+  /税金.*泥棒/,
+];
+
+var REJECTION_MESSAGES = [
+  'この投稿には不適切な表現が含まれています。\n\nこのサイトは米子市をもっと良くするための前向きな声を集める場です。\n「〇〇してほしい」「〇〇があるといいな」のような建設的な表現に書き換えてみてください！',
+  'この投稿には個人攻撃や否定的な表現が含まれているようです。\n\n例えば：\n❌「〇〇が悪い」→ ⭕「〇〇を改善してほしい」\n❌「〇〇のせいで…」→ ⭕「〇〇の状況を良くしてほしい」\n\n前向きな声に書き換えて再投稿してください！',
+];
 
 let map;
 let markers = {};
@@ -20,29 +64,33 @@ let activeFilter = 'all';
 let pendingLatLng = null;
 let selectedCategory = null;
 
-function init() {
-  loadData();
-  purgeInappropriatePosts();
+// Supabase REST API helper
+function supabaseRequest(method, path, body) {
+  var opts = {
+    method: method,
+    headers: {
+      'apikey': SUPABASE_KEY,
+      'Authorization': 'Bearer ' + SUPABASE_KEY,
+      'Content-Type': 'application/json',
+      'Prefer': method === 'POST' ? 'return=representation' : '',
+    },
+  };
+  if (body) opts.body = JSON.stringify(body);
+  return fetch(SUPABASE_URL + '/rest/v1/' + path, opts).then(function(res) {
+    if (!res.ok) throw new Error('API error: ' + res.status);
+    var ct = res.headers.get('content-type');
+    if (ct && ct.indexOf('json') !== -1) return res.json();
+    return null;
+  });
+}
+
+async function init() {
   initMap();
   initUI();
   renderFilterButtons();
+  await loadData();
   renderPosts();
   renderMarkers();
-
-  if (posts.length === 0) {
-    loadSampleData();
-    renderPosts();
-    renderMarkers();
-  }
-}
-
-function purgeInappropriatePosts() {
-  var before = posts.length;
-  posts = posts.filter(function(p) {
-    if (isSamplePost(p)) return true;
-    return moderateContent(p.message).ok && moderateContent(p.nickname).ok;
-  });
-  if (posts.length < before) saveData();
 }
 
 function initMap() {
@@ -70,14 +118,14 @@ function initUI() {
   });
   document.getElementById('submitPost').addEventListener('click', submitPost);
 
-  const msgInput = document.getElementById('message');
+  var msgInput = document.getElementById('message');
   msgInput.addEventListener('input', function() {
     document.getElementById('charCount').textContent = this.value.length + '/200';
   });
 
-  const catSelect = document.getElementById('categorySelect');
+  var catSelect = document.getElementById('categorySelect');
   CATEGORIES.forEach(function(cat) {
-    const btn = document.createElement('div');
+    var btn = document.createElement('div');
     btn.className = 'category-option';
     btn.dataset.category = cat.id;
     btn.innerHTML = '<span class="cat-emoji">' + cat.emoji + '</span>' + cat.name;
@@ -134,50 +182,6 @@ function sanitizeText(str, maxLen) {
   return str.replace(/[\x00-\x08\x0b\x0c\x0e-\x1f]/g, '').trim().slice(0, maxLen);
 }
 
-var VALID_CATEGORY_IDS = CATEGORIES.map(function(c) { return c.id; });
-
-var NG_WORDS = [
-  '死ね', '殺す', '殺せ', 'ころす', 'ころせ', 'しね',
-  'バカ', 'ばか', '馬鹿', 'アホ', 'あほ', '阿呆',
-  'クソ', 'くそ', '糞', 'カス', 'かす', 'ゴミ', 'ごみ',
-  'キモい', 'きもい', 'キモ', 'きも', 'ウザい', 'うざい', 'ウザ',
-  'ブス', 'ぶす', 'デブ', 'でぶ', 'ハゲ', 'はげ',
-  '消えろ', 'きえろ', '失せろ', 'うせろ',
-  'ムカつく', 'むかつく', 'イラつく', 'いらつく',
-  '嫌い', 'きらい', '大嫌い',
-  'クズ', 'くず', '屑',
-  'うんこ', 'うんち',
-  'ざまあ', 'ザマア', 'ざまぁ',
-  'ボケ', 'ぼけ',
-  'ガイジ', 'がいじ',
-  '障害者', '知障',
-  'チビ', 'ちび',
-  '在日', '反日',
-  '犯罪者',
-];
-
-var NG_PATTERNS = [
-  /[ぁ-んァ-ヶ一-龥a-zA-Z]+が悪い/,
-  /[ぁ-んァ-ヶ一-龥a-zA-Z]+のせい/,
-  /[ぁ-んァ-ヶ一-龥a-zA-Z]+は無能/,
-  /[ぁ-んァ-ヶ一-龥a-zA-Z]+やめろ/,
-  /[ぁ-んァ-ヶ一-龥a-zA-Z]+辞めろ/,
-  /[ぁ-んァ-ヶ一-龥a-zA-Z]+が嫌/,
-  /[ぁ-んァ-ヶ一-龥a-zA-Z]+なんか/,
-  /[ぁ-んァ-ヶ一-龥a-zA-Z]+ごとき/,
-  /市[長議].*無能/,
-  /市[長議].*やめ/,
-  /市[長議].*辞め/,
-  /誰.*得/,
-  /税金.*無駄/,
-  /税金.*泥棒/,
-];
-
-var REJECTION_MESSAGES = [
-  'この投稿には不適切な表現が含まれています。\n\nこのサイトは米子市をもっと良くするための前向きな声を集める場です。\n「〇〇してほしい」「〇〇があるといいな」のような建設的な表現に書き換えてみてください！',
-  'この投稿には個人攻撃や否定的な表現が含まれているようです。\n\n例えば：\n❌「〇〇が悪い」→ ⭕「〇〇を改善してほしい」\n❌「〇〇のせいで…」→ ⭕「〇〇の状況を良くしてほしい」\n\n前向きな声に書き換えて再投稿してください！',
-];
-
 function moderateContent(text) {
   var normalized = text
     .replace(/[Ａ-Ｚａ-ｚ０-９]/g, function(s) { return String.fromCharCode(s.charCodeAt(0) - 0xFEE0); })
@@ -189,17 +193,40 @@ function moderateContent(text) {
       return { ok: false, reason: REJECTION_MESSAGES[0] };
     }
   }
-
   for (var j = 0; j < NG_PATTERNS.length; j++) {
     if (NG_PATTERNS[j].test(normalized)) {
       return { ok: false, reason: REJECTION_MESSAGES[1] };
     }
   }
-
   return { ok: true };
 }
 
-function submitPost() {
+function showModerationAlert(message) {
+  var overlay = document.getElementById('moderationOverlay');
+  if (!overlay) {
+    overlay = document.createElement('div');
+    overlay.id = 'moderationOverlay';
+    overlay.className = 'moderation-overlay';
+    overlay.innerHTML =
+      '<div class="moderation-dialog">' +
+        '<div class="moderation-icon">🌱</div>' +
+        '<h3 class="moderation-title">前向きな声をお願いします</h3>' +
+        '<p class="moderation-message" id="moderationMessage"></p>' +
+        '<button class="moderation-btn" id="moderationClose">書き直す</button>' +
+      '</div>';
+    document.body.appendChild(overlay);
+    document.getElementById('moderationClose').addEventListener('click', function() {
+      overlay.classList.remove('active');
+    });
+    overlay.addEventListener('click', function(e) {
+      if (e.target === overlay) overlay.classList.remove('active');
+    });
+  }
+  document.getElementById('moderationMessage').textContent = message;
+  overlay.classList.add('active');
+}
+
+async function submitPost() {
   var msg = sanitizeText(document.getElementById('message').value, 200);
   if (!selectedCategory || VALID_CATEGORY_IDS.indexOf(selectedCategory) === -1) {
     alert('カテゴリを選択してください');
@@ -231,15 +258,49 @@ function submitPost() {
     nickname: nickname,
     message: msg,
     agrees: 0,
-    createdAt: new Date().toISOString(),
+    is_sample: false,
   };
 
-  posts.unshift(post);
-  saveData();
-  closePostForm();
-  renderPosts();
-  renderMarkers();
-  document.getElementById('mapHint').style.display = 'none';
+  var submitBtn = document.getElementById('submitPost');
+  submitBtn.disabled = true;
+  submitBtn.textContent = '投稿中...';
+
+  try {
+    var result = await supabaseRequest('POST', 'posts', post);
+    if (result && result.length > 0) {
+      posts.unshift(normalizePost(result[0]));
+    } else {
+      posts.unshift(post);
+    }
+    closePostForm();
+    renderPosts();
+    renderMarkers();
+    document.getElementById('mapHint').style.display = 'none';
+  } catch (e) {
+    alert('投稿に失敗しました。もう一度お試しください。');
+    console.error(e);
+  } finally {
+    submitBtn.disabled = false;
+    submitBtn.textContent = '投稿する';
+  }
+}
+
+function normalizePost(row) {
+  return {
+    id: row.id,
+    lat: row.lat,
+    lng: row.lng,
+    category: row.category,
+    nickname: row.nickname,
+    message: row.message,
+    agrees: row.agrees,
+    isSample: row.is_sample,
+    createdAt: row.created_at,
+  };
+}
+
+function isSamplePost(p) {
+  return p.isSample || (p.id && p.id.indexOf('sample_') === 0);
 }
 
 function createMarkerIcon(cat) {
@@ -264,7 +325,7 @@ function renderMarkers() {
 
     var marker = L.marker([post.lat, post.lng], { icon: createMarkerIcon(cat) }).addTo(map);
 
-    var isPopupSample = post.isSample || (post.id && post.id.indexOf('sample_') === 0);
+    var isPopupSample = isSamplePost(post);
     var popupSampleNote = isPopupSample ? '<div class="popup-sample-note">📌 これは投稿の一例です</div>' : '';
     var popupHtml = '<div class="popup-content">' +
       popupSampleNote +
@@ -304,7 +365,7 @@ function renderPosts() {
 
     var item = document.createElement('div');
     item.className = 'post-item';
-    var isSample = post.isSample || (post.id && post.id.indexOf('sample_') === 0);
+    var isSample = isSamplePost(post);
     var sampleBadge = isSample ? '<span class="sample-badge">📌 投稿例</span>' : '';
     item.innerHTML =
       '<div class="post-item-header">' +
@@ -340,8 +401,8 @@ function renderPosts() {
   });
 }
 
-function toggleAgree(postId) {
-  if (typeof postId !== 'string' || !/^[a-z0-9_]+$/.test(postId)) return;
+async function toggleAgree(postId) {
+  if (typeof postId !== 'string') return;
   var post = posts.find(function(p) { return p.id === postId; });
   if (!post) return;
 
@@ -353,7 +414,16 @@ function toggleAgree(postId) {
     post.agrees += 1;
   }
 
-  saveData();
+  // Save agreed set to localStorage (per-user preference)
+  localStorage.setItem('yonago_voice_agreed', JSON.stringify(Array.from(agreedSet)));
+
+  // Update agrees count in Supabase
+  try {
+    await supabaseRequest('PATCH', 'posts?id=eq.' + encodeURIComponent(postId), { agrees: post.agrees });
+  } catch (e) {
+    console.error('Failed to update agrees:', e);
+  }
+
   renderPosts();
 
   var btn = document.querySelector('.popup-agree-btn[data-post-id="' + CSS.escape(postId) + '"]');
@@ -370,10 +440,6 @@ function openDashboard() {
 
 function closeDashboard() {
   document.getElementById('dashboardOverlay').classList.remove('active');
-}
-
-function isSamplePost(p) {
-  return p.isSample || (p.id && p.id.indexOf('sample_') === 0);
 }
 
 function renderDashboard() {
@@ -475,170 +541,24 @@ function renderHotTopics() {
   });
 }
 
-function loadSampleData() {
-  var samples = [
-    {
-      lat: 35.4282, lng: 133.3320,
-      category: 'traffic',
-      nickname: '米子駅ユーザー',
-      message: '米子駅前の朝の渋滞がひどい。特に8時台は角盤町方面への信号待ちが長すぎる。右折レーンの延長か、時差式信号の導入を検討してほしい。',
-      agrees: 24,
-    },
-    {
-      lat: 35.4410, lng: 133.3580,
-      category: 'shop',
-      nickname: '皆生住民',
-      message: '皆生温泉エリアにおしゃれなカフェや雑貨屋がほしい！観光客だけでなく地元の人も楽しめるお店があると、もっとエリアが活性化すると思う。',
-      agrees: 31,
-    },
-    {
-      lat: 35.4350, lng: 133.3250,
-      category: 'child',
-      nickname: '子育てママ',
-      message: '湊山公園の遊具が古くなっている。小さい子が安心して遊べる新しい遊具を設置してほしい。柵も低くて少し心配。',
-      agrees: 18,
-    },
-    {
-      lat: 35.4230, lng: 133.3150,
-      category: 'transport',
-      nickname: '通勤者A',
-      message: 'だんだんバスの本数をもう少し増やしてほしい。特に夕方18時以降の便が少なくて、仕事帰りに使えない。',
-      agrees: 15,
-    },
-    {
-      lat: 35.4300, lng: 133.3400,
-      category: 'nature',
-      nickname: '散歩好き',
-      message: '加茂川沿いの遊歩道をもっと整備してほしい。桜並木は素晴らしいので、ベンチや照明を増やして夜も安心して歩ける道にしてほしい。',
-      agrees: 22,
-    },
-    {
-      lat: 35.4195, lng: 133.3280,
-      category: 'medical',
-      nickname: 'シニア世代',
-      message: '弓ヶ浜エリアに内科のクリニックが少ない。高齢者が多い地域なので、もう少し医療アクセスを改善してほしい。',
-      agrees: 12,
-    },
-    {
-      lat: 35.4320, lng: 133.3180,
-      category: 'infra',
-      nickname: '夜道が不安',
-      message: '後藤駅周辺の住宅街は街灯が少なくて夜道が暗い。防犯面でも心配なので、LED街灯を増設してほしい。',
-      agrees: 9,
-    },
-    {
-      lat: 35.4380, lng: 133.3450,
-      category: 'idea',
-      nickname: 'まちづくり応援',
-      message: '米子城跡の活用をもっと推進してほしい！ライトアップイベントや、お城マルシェなど、市民が集まれるイベントを定期開催してはどうか。',
-      agrees: 27,
-    },
-    {
-      lat: 35.4260, lng: 133.3350,
-      category: 'shop',
-      nickname: '学生さん',
-      message: '角盤町に大きめの書店がほしい。最近どんどん本屋が減っていて寂しい。カフェ併設の書店なら若い人も集まると思う。',
-      agrees: 20,
-    },
-    {
-      lat: 35.4450, lng: 133.3500,
-      category: 'transport',
-      nickname: '観光推進派',
-      message: '米子空港からのリムジンバス、皆生温泉経由便をもっと増やしてほしい。観光客にとって温泉直行便があると便利。',
-      agrees: 14,
-    },
-  ];
-
-  var now = Date.now();
-  samples.forEach(function(s, i) {
-    posts.push({
-      id: 'sample_' + i,
-      lat: s.lat,
-      lng: s.lng,
-      category: s.category,
-      nickname: s.nickname,
-      message: s.message,
-      agrees: s.agrees,
-      isSample: true,
-      createdAt: new Date(now - (i * 3600000 * 6)).toISOString(),
-    });
-  });
-
-  saveData();
-}
-
-function showModerationAlert(message) {
-  var overlay = document.getElementById('moderationOverlay');
-  if (!overlay) {
-    overlay = document.createElement('div');
-    overlay.id = 'moderationOverlay';
-    overlay.className = 'moderation-overlay';
-    overlay.innerHTML =
-      '<div class="moderation-dialog">' +
-        '<div class="moderation-icon">🌱</div>' +
-        '<h3 class="moderation-title">前向きな声をお願いします</h3>' +
-        '<p class="moderation-message" id="moderationMessage"></p>' +
-        '<button class="moderation-btn" id="moderationClose">書き直す</button>' +
-      '</div>';
-    document.body.appendChild(overlay);
-    document.getElementById('moderationClose').addEventListener('click', function() {
-      overlay.classList.remove('active');
-    });
-    overlay.addEventListener('click', function(e) {
-      if (e.target === overlay) overlay.classList.remove('active');
-    });
-  }
-  document.getElementById('moderationMessage').textContent = message;
-  overlay.classList.add('active');
-}
-
-function isValidPost(p) {
-  return p
-    && typeof p.id === 'string' && /^[a-z0-9_]+$/.test(p.id)
-    && typeof p.lat === 'number' && isFinite(p.lat)
-    && typeof p.lng === 'number' && isFinite(p.lng)
-    && typeof p.category === 'string' && VALID_CATEGORY_IDS.indexOf(p.category) !== -1
-    && typeof p.nickname === 'string' && p.nickname.length <= 20
-    && typeof p.message === 'string' && p.message.length <= 200
-    && typeof p.agrees === 'number' && isFinite(p.agrees) && p.agrees >= 0
-    && typeof p.createdAt === 'string';
-}
-
-function loadData() {
+async function loadData() {
+  // Load agreed set from localStorage (per-user)
   try {
-    var stored = localStorage.getItem(STORAGE_KEY);
-    if (stored) {
-      var parsed = JSON.parse(stored);
-      if (Array.isArray(parsed)) {
-        posts = parsed.filter(isValidPost);
-      }
-    }
-    var agreed = localStorage.getItem(AGREED_KEY);
-    if (agreed) {
-      var agreedParsed = JSON.parse(agreed);
-      if (Array.isArray(agreedParsed)) {
-        agreedSet = new Set(agreedParsed.filter(function(id) {
-          return typeof id === 'string' && /^[a-z0-9_]+$/.test(id);
-        }));
-      }
-    }
+    var agreed = localStorage.getItem('yonago_voice_agreed');
+    if (agreed) agreedSet = new Set(JSON.parse(agreed));
   } catch(e) {
-    posts = [];
     agreedSet = new Set();
   }
-}
 
-var MAX_POSTS = 500;
-
-function saveData() {
-  if (posts.length > MAX_POSTS) {
-    posts = posts.slice(0, MAX_POSTS);
-  }
+  // Load posts from Supabase
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(posts));
-    localStorage.setItem(AGREED_KEY, JSON.stringify(Array.from(agreedSet)));
-  } catch(e) {
-    console.warn('localStorage save failed');
+    var data = await supabaseRequest('GET', 'posts?order=created_at.desc&limit=500');
+    if (Array.isArray(data)) {
+      posts = data.map(normalizePost);
+    }
+  } catch (e) {
+    console.error('Failed to load posts from Supabase:', e);
+    posts = [];
   }
 }
 
@@ -649,7 +569,9 @@ function escapeHtml(str) {
 }
 
 function formatDate(isoStr) {
+  if (!isoStr) return '';
   var d = new Date(isoStr);
+  if (isNaN(d.getTime())) return '';
   return (d.getMonth() + 1) + '/' + d.getDate() + ' ' + d.getHours() + ':' + String(d.getMinutes()).padStart(2, '0');
 }
 
