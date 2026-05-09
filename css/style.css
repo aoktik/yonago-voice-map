@@ -145,6 +145,10 @@ body {
   background: #999;
 }
 
+.yt-btn-short {
+  display: none;
+}
+
 .main-content {
   flex: 1;
   display: flex;
@@ -1977,7 +1981,13 @@ body {
   .btn-dashboard, .btn-youtube {
     flex: 1;
     text-align: center;
+    white-space: nowrap;
+    font-size: 0.8rem;
+    padding: 8px 10px;
   }
+
+  .yt-btn-full { display: none; }
+  .yt-btn-short { display: inline; }
 
   .main-content {
     flex-direction: column;
