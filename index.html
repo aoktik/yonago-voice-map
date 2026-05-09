@@ -29,6 +29,11 @@
         <button class="btn-dashboard" id="toggleDashboard">📊 ダッシュボード</button>
         <span class="btn-youtube coming-soon" id="youtubeLink">▶ YouTube討論チャンネル（準備中）</span>
       </div>
+      <div class="header-legal">
+        <span class="header-legal-notice">個人運営・米子市非公式</span>
+        <a href="terms.html" class="header-legal-link">利用規約</a>
+        <a href="privacy.html" class="header-legal-link">プライバシーポリシー</a>
+      </div>
     </div>
   </header>
 
@@ -153,6 +158,18 @@
           <div id="shopData"></div>
         </section>
       </div>
+
+      <div class="dashboard-footer">
+        <p>本サイトは個人運営のシビックテックプロジェクトです。米子市役所および米子市とは一切関係ありません。</p>
+        <p>
+          <a href="terms.html" target="_blank" rel="noopener noreferrer">利用規約</a> |
+          <a href="privacy.html" target="_blank" rel="noopener noreferrer">プライバシーポリシー</a>
+        </p>
+        <p class="dashboard-credits">
+          地図: &copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap</a> |
+          写真: <a href="https://commons.wikimedia.org/" target="_blank" rel="noopener noreferrer">Wikimedia Commons</a>（CC BY-SA）
+        </p>
+      </div>
     </div>
   </div>
 
@@ -180,6 +197,13 @@
         <p>🌱 <strong>投稿ガイドライン</strong></p>
         <p>このサイトは米子市をより良くするための前向きな声を集める場です。個人への批判・悪口・誹謗中傷は自動で検出され投稿できません。</p>
         <p>⭕「〇〇を改善してほしい」「〇〇があるといいな」</p>
+      </div>
+
+      <div class="form-terms-agree">
+        <label class="terms-checkbox-label">
+          <input type="checkbox" id="termsAgree">
+          <span><a href="terms.html" target="_blank" rel="noopener noreferrer">利用規約</a>および<a href="privacy.html" target="_blank" rel="noopener noreferrer">プライバシーポリシー</a>に同意する</span>
+        </label>
       </div>
 
       <div class="form-actions">
@@ -234,6 +258,48 @@
     <div class="topic-detail-modal">
       <button class="topic-detail-close" id="closeTopicDetail">✕</button>
       <div id="topicDetailContent"></div>
+    </div>
+  </div>
+
+  <!-- Cookie同意バナー -->
+  <div class="cookie-consent" id="cookieConsent">
+    <div class="cookie-consent-inner">
+      <p class="cookie-consent-text">
+        本サイトではGoogle Analyticsを使用し、Cookieおよびローカルストレージで利用状況を記録しています。詳細は<a href="privacy.html">プライバシーポリシー</a>をご確認ください。
+      </p>
+      <div class="cookie-consent-actions">
+        <button class="cookie-btn cookie-btn-accept" id="cookieAccept">同意する</button>
+        <button class="cookie-btn cookie-btn-decline" id="cookieDecline">分析Cookieを拒否</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 通報モーダル -->
+  <div class="post-form-overlay" id="reportFormOverlay">
+    <div class="post-form report-form">
+      <h3>通報する</h3>
+      <p class="report-target" id="reportTarget"></p>
+
+      <div class="form-group">
+        <label>通報理由</label>
+        <div class="report-reasons" id="reportReasons">
+          <label class="report-reason-option"><input type="radio" name="reportReason" value="slander"> 誹謗中傷・名誉毀損</label>
+          <label class="report-reason-option"><input type="radio" name="reportReason" value="personal_info"> 個人情報が含まれている</label>
+          <label class="report-reason-option"><input type="radio" name="reportReason" value="false_info"> 虚偽の情報</label>
+          <label class="report-reason-option"><input type="radio" name="reportReason" value="spam"> スパム・広告</label>
+          <label class="report-reason-option"><input type="radio" name="reportReason" value="other"> その他</label>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="reportDetail">補足（任意） <span class="char-count" id="reportCharCount">0/200</span></label>
+        <textarea id="reportDetail" placeholder="具体的な問題点があれば記入してください" maxlength="200" rows="3"></textarea>
+      </div>
+
+      <div class="form-actions">
+        <button class="btn-cancel" id="cancelReport">キャンセル</button>
+        <button class="btn-submit btn-report-submit" id="submitReport">通報を送信</button>
+      </div>
     </div>
   </div>
 

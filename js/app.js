@@ -1,6 +1,22 @@
 // GA4 safe wrapper (avoids crash if gtag not loaded)
 if (typeof gtag === 'undefined') { window.gtag = function() {}; }
 
+// === Cookie同意管理 ===
+(function() {
+  var consent = localStorage.getItem('yonago_cookie_consent');
+  if (consent === 'declined') {
+    // GA4を無効化
+    window['ga-disable-G-759KNPK2B6'] = true;
+  }
+  if (!consent) {
+    // 同意バナーを表示
+    document.addEventListener('DOMContentLoaded', function() {
+      var banner = document.getElementById('cookieConsent');
+      if (banner) banner.classList.add('active');
+    });
+  }
+})();
+
 var SUPABASE_URL = 'https://pqnuxkdfegydungyfnsq.supabase.co';
 var SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBxbnV4a2RmZWd5ZHVuZ3lmbnNxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgyNzUyMTgsImV4cCI6MjA5Mzg1MTIxOH0.exGLJP3uiCvLzyOhKrsxeDpXgdQyllBXjL5n8HASB7c';
 
@@ -250,6 +266,34 @@ function initUI() {
   document.getElementById('closeTopicDetail').addEventListener('click', closeTopicDetail);
   document.getElementById('topicDetailOverlay').addEventListener('click', function(e) {
     if (e.target === this) closeTopicDetail();
+  });
+
+  // Cookie consent events
+  var cookieAcceptBtn = document.getElementById('cookieAccept');
+  var cookieDeclineBtn = document.getElementById('cookieDecline');
+  if (cookieAcceptBtn) {
+    cookieAcceptBtn.addEventListener('click', function() {
+      localStorage.setItem('yonago_cookie_consent', 'accepted');
+      document.getElementById('cookieConsent').classList.remove('active');
+    });
+  }
+  if (cookieDeclineBtn) {
+    cookieDeclineBtn.addEventListener('click', function() {
+      localStorage.setItem('yonago_cookie_consent', 'declined');
+      window['ga-disable-G-759KNPK2B6'] = true;
+      document.getElementById('cookieConsent').classList.remove('active');
+    });
+  }
+
+  // Report form events
+  document.getElementById('cancelReport').addEventListener('click', closeReportForm);
+  document.getElementById('reportFormOverlay').addEventListener('click', function(e) {
+    if (e.target === this) closeReportForm();
+  });
+  document.getElementById('submitReport').addEventListener('click', submitReportForm);
+  var reportDetail = document.getElementById('reportDetail');
+  reportDetail.addEventListener('input', function() {
+    document.getElementById('reportCharCount').textContent = this.value.length + '/200';
   });
 
   var msgInput = document.getElementById('message');
@@ -685,6 +729,13 @@ async function submitPost() {
     return;
   }
 
+  // 利用規約同意チェック
+  var termsCheckbox = document.getElementById('termsAgree');
+  if (termsCheckbox && !termsCheckbox.checked) {
+    alert('投稿するには利用規約とプライバシーポリシーへの同意が必要です。');
+    return;
+  }
+
   var modResult = moderateContent(msg);
   if (!modResult.ok) {
     showModerationAlert(modResult.reason);
@@ -801,6 +852,7 @@ function renderMarkers() {
       '<br><button class="popup-agree-btn" data-post-id="' + escapeHtml(post.id) + '">' +
       '👍 賛同 <span class="popup-agree-count">' + post.agrees + '</span></button>' +
       popupResolveBtn +
+      '<button class="popup-report-btn" data-post-id="' + escapeHtml(post.id) + '">⚠ 通報</button>' +
       '</div>';
 
     marker.bindPopup(popupHtml);
@@ -812,6 +864,10 @@ function renderMarkers() {
       var resolveBtn = document.querySelector('.popup-resolve-btn[data-post-id="' + CSS.escape(post.id) + '"]');
       if (resolveBtn) {
         resolveBtn.addEventListener('click', function() { openResolveForm(post.id); });
+      }
+      var reportBtn = document.querySelector('.popup-report-btn[data-post-id="' + CSS.escape(post.id) + '"]');
+      if (reportBtn) {
+        reportBtn.addEventListener('click', function() { openReportForm(post.id); });
       }
     });
     markers[post.id] = marker;
@@ -861,6 +917,7 @@ function renderPosts() {
       '<div class="post-footer">' +
         '<span class="post-date">' + formatDate(post.createdAt) + '</span>' +
         '<div class="post-agree">' +
+          '<button class="btn-report-post" data-id="' + post.id + '" title="通報">⚠</button>' +
           resolveButton +
           '<button class="btn-agree ' + (agreedSet.has(post.id) ? 'agreed' : '') + '" data-id="' + post.id + '">' +
             '👍 <span class="agree-count">' + post.agrees + '</span>' +
@@ -869,7 +926,7 @@ function renderPosts() {
       '</div>';
 
     item.addEventListener('click', function(e) {
-      if (e.target.closest('.btn-agree') || e.target.closest('.btn-resolve')) return;
+      if (e.target.closest('.btn-agree') || e.target.closest('.btn-resolve') || e.target.closest('.btn-report-post')) return;
       if (markers[post.id]) {
         map.setView([post.lat, post.lng], 16);
         markers[post.id].openPopup();
@@ -887,6 +944,14 @@ function renderPosts() {
       resBtn.addEventListener('click', function(e) {
         e.stopPropagation();
         openResolveForm(post.id);
+      });
+    }
+
+    var reportPostBtn = item.querySelector('.btn-report-post');
+    if (reportPostBtn) {
+      reportPostBtn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        openReportForm(post.id);
       });
     }
 
@@ -1627,6 +1692,61 @@ async function voteTopic(topicId, vote) {
     });
   } catch (e) {
     console.error('Failed to update topic votes:', e);
+  }
+}
+
+// === 通報機能 ===
+var pendingReportPostId = null;
+
+function openReportForm(postId) {
+  var post = posts.find(function(p) { return p.id === postId; });
+  if (!post) return;
+  pendingReportPostId = postId;
+  document.getElementById('reportTarget').textContent =
+    '対象: 「' + post.message.slice(0, 50) + (post.message.length > 50 ? '...' : '') + '」';
+  document.getElementById('reportDetail').value = '';
+  document.getElementById('reportCharCount').textContent = '0/200';
+  // Reset radio
+  var radios = document.querySelectorAll('input[name="reportReason"]');
+  radios.forEach(function(r) { r.checked = false; });
+  document.getElementById('reportFormOverlay').classList.add('active');
+}
+
+function closeReportForm() {
+  document.getElementById('reportFormOverlay').classList.remove('active');
+  pendingReportPostId = null;
+}
+
+async function submitReportForm() {
+  var reason = document.querySelector('input[name="reportReason"]:checked');
+  if (!reason) {
+    alert('通報理由を選択してください');
+    return;
+  }
+
+  var detail = sanitizeText(document.getElementById('reportDetail').value, 200);
+  if (!pendingReportPostId) return;
+
+  var submitBtn = document.getElementById('submitReport');
+  submitBtn.disabled = true;
+  submitBtn.textContent = '送信中...';
+
+  try {
+    await supabaseRequest('POST', 'post_reports', {
+      post_id: pendingReportPostId,
+      reason: reason.value,
+      detail: detail || null,
+    });
+
+    closeReportForm();
+    gtag('event', 'post_report', { reason: reason.value });
+    alert('通報を送信しました。\n管理者が確認いたします。ご協力ありがとうございます。');
+  } catch (e) {
+    console.error('Report failed:', e);
+    alert('通報の送信に失敗しました。もう一度お試しください。');
+  } finally {
+    submitBtn.disabled = false;
+    submitBtn.textContent = '通報を送信';
   }
 }
 
