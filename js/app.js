@@ -65,6 +65,7 @@ let topicVotes = {};  // { topicId: 'like' | 'dislike' }
 let activeFilter = 'all';
 let pendingLatLng = null;
 let selectedCategory = null;
+let pendingResolvePostId = null;
 
 // Supabase REST API helper
 function supabaseRequest(method, path, body) {
@@ -174,6 +175,17 @@ function initUI() {
     if (e.target === this) closePostForm();
   });
   document.getElementById('submitPost').addEventListener('click', submitPost);
+
+  // Resolve form events
+  document.getElementById('cancelResolve').addEventListener('click', closeResolveForm);
+  document.getElementById('resolveFormOverlay').addEventListener('click', function(e) {
+    if (e.target === this) closeResolveForm();
+  });
+  document.getElementById('submitResolve').addEventListener('click', submitResolve);
+  var resolveMsg = document.getElementById('resolveMessage');
+  resolveMsg.addEventListener('input', function() {
+    document.getElementById('resolveCharCount').textContent = this.value.length + '/200';
+  });
 
   var msgInput = document.getElementById('message');
   msgInput.addEventListener('input', function() {
@@ -367,6 +379,68 @@ function closePostForm() {
   selectedCategory = null;
 }
 
+// === 改善報告フォーム ===
+function openResolveForm(postId) {
+  var post = posts.find(function(p) { return p.id === postId; });
+  if (!post) return;
+  pendingResolvePostId = postId;
+  document.getElementById('resolveTarget').textContent = '📍 「' + post.message.slice(0, 40) + (post.message.length > 40 ? '...' : '') + '」';
+  document.getElementById('adminPassword').value = '';
+  document.getElementById('resolveMessage').value = '';
+  document.getElementById('resolveCharCount').textContent = '0/200';
+  document.getElementById('resolveFormOverlay').classList.add('active');
+}
+
+function closeResolveForm() {
+  document.getElementById('resolveFormOverlay').classList.remove('active');
+  pendingResolvePostId = null;
+}
+
+async function submitResolve() {
+  var password = document.getElementById('adminPassword').value.trim();
+  var message = sanitizeText(document.getElementById('resolveMessage').value, 200);
+
+  if (!password) {
+    alert('管理者パスワードを入力してください');
+    return;
+  }
+  if (!message) {
+    alert('改善内容を入力してください');
+    return;
+  }
+  if (!pendingResolvePostId) return;
+
+  var submitBtn = document.getElementById('submitResolve');
+  submitBtn.disabled = true;
+  submitBtn.textContent = '送信中...';
+
+  try {
+    var result = await supabaseRequest('POST', 'rpc/resolve_post', {
+      post_id: pendingResolvePostId,
+      password: password,
+      message: message,
+    });
+
+    // Update local post data
+    var post = posts.find(function(p) { return p.id === pendingResolvePostId; });
+    if (post) {
+      post.resolved = true;
+      post.resolvedMessage = message;
+    }
+
+    closeResolveForm();
+    renderPosts();
+    renderMarkers();
+    alert('✅ 改善報告が完了しました！');
+  } catch (e) {
+    console.error('Resolve failed:', e);
+    alert('改善報告に失敗しました。\nパスワードが正しいか確認してください。');
+  } finally {
+    submitBtn.disabled = false;
+    submitBtn.textContent = '✅ 改善報告する';
+  }
+}
+
 function sanitizeText(str, maxLen) {
   if (typeof str !== 'string') return '';
   return str.replace(/[\x00-\x08\x0b\x0c\x0e-\x1f]/g, '').trim().slice(0, maxLen);
@@ -529,6 +603,10 @@ function renderMarkers() {
         '<div class="popup-resolved-msg">' + escapeHtml(post.resolvedMessage) + '</div>' +
         '</div>';
     }
+    var popupResolveBtn = '';
+    if (!post.resolved) {
+      popupResolveBtn = '<button class="popup-resolve-btn" data-post-id="' + escapeHtml(post.id) + '">🔧 改善報告</button>';
+    }
     var popupHtml = '<div class="popup-content">' +
       popupSampleNote +
       '<span class="popup-category" style="background:' + cat.color + '">' + cat.emoji + ' ' + cat.name + '</span>' +
@@ -537,6 +615,7 @@ function renderMarkers() {
       '<span class="popup-nickname">' + escapeHtml(post.nickname) + '</span>' +
       '<br><button class="popup-agree-btn" data-post-id="' + escapeHtml(post.id) + '">' +
       '👍 賛同 <span class="popup-agree-count">' + post.agrees + '</span></button>' +
+      popupResolveBtn +
       '</div>';
 
     marker.bindPopup(popupHtml);
@@ -544,6 +623,10 @@ function renderMarkers() {
       var btn = document.querySelector('.popup-agree-btn[data-post-id="' + CSS.escape(post.id) + '"]');
       if (btn) {
         btn.addEventListener('click', function() { toggleAgree(post.id); });
+      }
+      var resolveBtn = document.querySelector('.popup-resolve-btn[data-post-id="' + CSS.escape(post.id) + '"]');
+      if (resolveBtn) {
+        resolveBtn.addEventListener('click', function() { openResolveForm(post.id); });
       }
     });
     markers[post.id] = marker;
@@ -579,6 +662,8 @@ function renderPosts() {
           '<div class="resolved-message">' + escapeHtml(post.resolvedMessage) + '</div>' +
         '</div>';
     }
+    var resolveButton = !post.resolved ?
+      '<button class="btn-resolve" data-id="' + post.id + '">🔧 改善報告</button>' : '';
     item.innerHTML =
       '<div class="post-item-header">' +
         '<span class="post-category-badge" style="background:' + cat.color + '">' + cat.emoji + ' ' + cat.name + '</span>' +
@@ -591,6 +676,7 @@ function renderPosts() {
       '<div class="post-footer">' +
         '<span class="post-date">' + formatDate(post.createdAt) + '</span>' +
         '<div class="post-agree">' +
+          resolveButton +
           '<button class="btn-agree ' + (agreedSet.has(post.id) ? 'agreed' : '') + '" data-id="' + post.id + '">' +
             '👍 <span class="agree-count">' + post.agrees + '</span>' +
           '</button>' +
@@ -598,7 +684,7 @@ function renderPosts() {
       '</div>';
 
     item.addEventListener('click', function(e) {
-      if (e.target.closest('.btn-agree')) return;
+      if (e.target.closest('.btn-agree') || e.target.closest('.btn-resolve')) return;
       if (markers[post.id]) {
         map.setView([post.lat, post.lng], 16);
         markers[post.id].openPopup();
@@ -610,6 +696,14 @@ function renderPosts() {
       e.stopPropagation();
       toggleAgree(post.id);
     });
+
+    var resBtn = item.querySelector('.btn-resolve');
+    if (resBtn) {
+      resBtn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        openResolveForm(post.id);
+      });
+    }
 
     container.appendChild(item);
   });
