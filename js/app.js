@@ -59,7 +59,9 @@ var REJECTION_MESSAGES = [
 let map;
 let markers = {};
 let posts = [];
+let youtubeTopics = [];
 let agreedSet = new Set();
+let topicVotes = {};  // { topicId: 'like' | 'dislike' }
 let activeFilter = 'all';
 let pendingLatLng = null;
 let selectedCategory = null;
@@ -87,11 +89,13 @@ function supabaseRequest(method, path, body) {
 async function init() {
   initMap();
   initUI();
+  initSidebarTabs();
   renderFilterButtons();
   await loadData();
   await migrateLocalStorageToSupabase();
   renderPosts();
   renderMarkers();
+  renderYoutubeTopics();
 }
 
 async function migrateLocalStorageToSupabase() {
@@ -185,6 +189,19 @@ function initUI() {
       selectedCategory = cat.id;
     });
     catSelect.appendChild(btn);
+  });
+}
+
+function initSidebarTabs() {
+  var tabs = document.querySelectorAll('.sidebar-tab');
+  tabs.forEach(function(tab) {
+    tab.addEventListener('click', function() {
+      tabs.forEach(function(t) { t.classList.remove('active'); });
+      tab.classList.add('active');
+      var target = tab.dataset.tab;
+      document.querySelectorAll('.sidebar-panel').forEach(function(p) { p.classList.remove('active'); });
+      document.getElementById(target === 'youtube' ? 'youtubePanel' : 'voicesPanel').classList.add('active');
+    });
   });
 }
 
@@ -908,6 +925,14 @@ async function loadData() {
     agreedSet = new Set();
   }
 
+  // Load topic votes from localStorage
+  try {
+    var storedVotes = localStorage.getItem('yonago_topic_votes');
+    if (storedVotes) topicVotes = JSON.parse(storedVotes);
+  } catch(e) {
+    topicVotes = {};
+  }
+
   // Load posts from Supabase
   try {
     var data = await supabaseRequest('GET', 'posts?order=created_at.desc&limit=500');
@@ -917,6 +942,17 @@ async function loadData() {
   } catch (e) {
     console.error('Failed to load posts from Supabase:', e);
     posts = [];
+  }
+
+  // Load YouTube topics from Supabase
+  try {
+    var topicData = await supabaseRequest('GET', 'youtube_topics?order=likes.desc');
+    if (Array.isArray(topicData)) {
+      youtubeTopics = topicData;
+    }
+  } catch (e) {
+    console.error('Failed to load YouTube topics:', e);
+    youtubeTopics = [];
   }
 }
 
@@ -931,6 +967,105 @@ function formatDate(isoStr) {
   var d = new Date(isoStr);
   if (isNaN(d.getTime())) return '';
   return (d.getMonth() + 1) + '/' + d.getDate() + ' ' + d.getHours() + ':' + String(d.getMinutes()).padStart(2, '0');
+}
+
+// === YouTube Topics ===
+var TOPIC_COLORS = {
+  traffic: ['#dc2626', '#991b1b'],
+  shop: ['#d97706', '#92400e'],
+  transport: ['#0284c7', '#075985'],
+  medical: ['#7c3aed', '#5b21b6'],
+  idea: ['#475569', '#1e293b'],
+  nature: ['#059669', '#065f46'],
+  child: ['#db2777', '#9d174d'],
+  infra: ['#7c3aed', '#4c1d95'],
+};
+
+function renderYoutubeTopics() {
+  var container = document.getElementById('youtubeTopicsList');
+  if (!container) return;
+
+  if (youtubeTopics.length === 0) {
+    container.innerHTML = '<div class="empty-state">討論テーマを準備中です</div>';
+    return;
+  }
+
+  container.innerHTML = '';
+  youtubeTopics.forEach(function(topic) {
+    var colors = TOPIC_COLORS[topic.category] || TOPIC_COLORS.idea;
+    var cat = CATEGORIES.find(function(c) { return c.id === topic.category; });
+    var userVote = topicVotes[topic.id] || null;
+    var total = topic.likes + topic.dislikes;
+    var likePct = total > 0 ? Math.round(topic.likes / total * 100) : 0;
+
+    var card = document.createElement('div');
+    card.className = 'yt-topic-card';
+
+    card.innerHTML =
+      '<div class="yt-thumb" style="background:linear-gradient(135deg,' + colors[0] + ',' + colors[1] + ')">' +
+        '<div class="yt-thumb-cat">' + (cat ? cat.emoji + ' ' + cat.name : '') + '</div>' +
+        '<div class="yt-thumb-title">' + escapeHtml(topic.title) + '</div>' +
+        '<div class="yt-thumb-play">▶</div>' +
+      '</div>' +
+      '<div class="yt-topic-body">' +
+        '<p class="yt-topic-subtitle">' + escapeHtml(topic.subtitle || '') + '</p>' +
+        '<div class="yt-vote-bar-wrap">' +
+          '<div class="yt-vote-bar-fill" style="width:' + likePct + '%"></div>' +
+        '</div>' +
+        '<div class="yt-vote-actions">' +
+          '<button class="yt-vote-btn yt-like' + (userVote === 'like' ? ' voted' : '') + '" data-topic="' + topic.id + '" data-vote="like">' +
+            '👍 見たい <span>' + topic.likes + '</span>' +
+          '</button>' +
+          '<button class="yt-vote-btn yt-dislike' + (userVote === 'dislike' ? ' voted' : '') + '" data-topic="' + topic.id + '" data-vote="dislike">' +
+            '👎 <span>' + topic.dislikes + '</span>' +
+          '</button>' +
+        '</div>' +
+      '</div>';
+
+    // Vote button listeners
+    card.querySelectorAll('.yt-vote-btn').forEach(function(btn) {
+      btn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        voteTopic(btn.dataset.topic, btn.dataset.vote);
+      });
+    });
+
+    container.appendChild(card);
+  });
+}
+
+async function voteTopic(topicId, vote) {
+  var topic = youtubeTopics.find(function(t) { return t.id === topicId; });
+  if (!topic) return;
+
+  var prev = topicVotes[topicId] || null;
+
+  // If same vote, cancel it
+  if (prev === vote) {
+    if (vote === 'like') topic.likes = Math.max(0, topic.likes - 1);
+    else topic.dislikes = Math.max(0, topic.dislikes - 1);
+    delete topicVotes[topicId];
+  } else {
+    // Remove previous vote
+    if (prev === 'like') topic.likes = Math.max(0, topic.likes - 1);
+    else if (prev === 'dislike') topic.dislikes = Math.max(0, topic.dislikes - 1);
+    // Add new vote
+    if (vote === 'like') topic.likes++;
+    else topic.dislikes++;
+    topicVotes[topicId] = vote;
+  }
+
+  localStorage.setItem('yonago_topic_votes', JSON.stringify(topicVotes));
+  renderYoutubeTopics();
+
+  try {
+    await supabaseRequest('PATCH', 'youtube_topics?id=eq.' + encodeURIComponent(topicId), {
+      likes: topic.likes,
+      dislikes: topic.dislikes,
+    });
+  } catch (e) {
+    console.error('Failed to update topic votes:', e);
+  }
 }
 
 document.addEventListener('DOMContentLoaded', init);

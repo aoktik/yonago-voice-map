@@ -33,16 +33,31 @@
     </div>
 
     <aside class="sidebar" id="sidebar">
-      <div class="sidebar-header">
-        <h2>みんなの声</h2>
-        <span class="post-count" id="postCount">0件</span>
+      <div class="sidebar-tabs">
+        <button class="sidebar-tab active" data-tab="voices">📍 みんなの声</button>
+        <button class="sidebar-tab" data-tab="youtube">▶ 討論テーマ</button>
       </div>
 
-      <div class="category-filter" id="categoryFilter">
-        <button class="filter-btn active" data-category="all">すべて</button>
+      <div class="sidebar-panel active" id="voicesPanel">
+        <div class="sidebar-header">
+          <h2>みんなの声</h2>
+          <span class="post-count" id="postCount">0件</span>
+        </div>
+
+        <div class="category-filter" id="categoryFilter">
+          <button class="filter-btn active" data-category="all">すべて</button>
+        </div>
+
+        <div class="post-list" id="postList"></div>
       </div>
 
-      <div class="post-list" id="postList"></div>
+      <div class="sidebar-panel" id="youtubePanel">
+        <div class="sidebar-header">
+          <h2>▶ YouTube討論テーマ</h2>
+        </div>
+        <p class="youtube-panel-desc">みんなの声から生まれた討論テーマ案。<br>見たいテーマに👍、興味ないテーマに👎を！</p>
+        <div class="youtube-topics-list" id="youtubeTopicsList"></div>
+      </div>
     </aside>
   </main>
 
