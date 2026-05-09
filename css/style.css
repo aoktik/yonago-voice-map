@@ -1264,6 +1264,9 @@ body {
   position: absolute;
   inset: 0;
   z-index: 0;
+  background-size: cover;
+  background-position: center;
+  background-color: #1e293b;
 }
 
 .yt-thumb-overlay {
