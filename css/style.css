@@ -260,7 +260,7 @@ body {
   left: 50%;
   transform: translateX(-50%);
   background: rgba(255,255,255,0.95);
-  padding: 10px 20px;
+  padding: 8px 18px;
   border-radius: 24px;
   font-size: 0.9rem;
   font-weight: 600;
@@ -269,6 +269,9 @@ body {
   z-index: 800;
   pointer-events: none;
   animation: fadeHint 4s ease-in-out infinite;
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
 
 @keyframes fadeHint {
@@ -2341,4 +2344,97 @@ body {
 }
 .footer-credits a:hover {
   text-decoration: underline;
+}
+
+/* ===== よな坊マスコット ===== */
+.logo-mascot {
+  height: 32px;
+  width: auto;
+  vertical-align: middle;
+  margin-right: 4px;
+}
+
+.hint-mascot {
+  height: 48px;
+  width: auto;
+  vertical-align: middle;
+  margin-right: 4px;
+}
+
+.empty-mascot {
+  display: block;
+  width: 80px;
+  height: auto;
+  margin: 0 auto 8px;
+  opacity: 0.85;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 24px 16px;
+}
+
+.dashboard-mascot {
+  display: block;
+  width: 100px;
+  height: auto;
+  margin: 0 auto 12px;
+}
+
+.yonabo-toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%) translateY(100px);
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+  padding: 10px 20px 10px 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  z-index: 10000;
+  opacity: 0;
+  transition: transform 0.4s ease, opacity 0.4s ease;
+  pointer-events: none;
+}
+
+.yonabo-toast.show {
+  transform: translateX(-50%) translateY(0);
+  opacity: 1;
+}
+
+.yonabo-toast-img {
+  width: 50px;
+  height: auto;
+}
+
+.yonabo-toast span {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #1e293b;
+  white-space: nowrap;
+}
+
+@media (max-width: 768px) {
+  .logo-mascot {
+    height: 28px;
+  }
+
+  .hint-mascot {
+    height: 32px;
+  }
+
+  .yonabo-toast {
+    bottom: 16px;
+    padding: 8px 16px 8px 8px;
+  }
+
+  .yonabo-toast-img {
+    width: 40px;
+  }
+
+  .yonabo-toast span {
+    font-size: 0.8rem;
+  }
 }

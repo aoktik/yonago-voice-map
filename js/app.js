@@ -777,6 +777,7 @@ async function submitPost() {
     renderPosts();
     renderMarkers();
     document.getElementById('mapHint').style.display = 'none';
+    showYonaboThanks();
     gtag('event', 'post_submit', { category: selectedCategory });
   } catch (e) {
     alert('投稿に失敗しました。もう一度お試しください。');
@@ -1048,7 +1049,7 @@ function renderTopRanking() {
   var top5 = sorted.slice(0, 5);
 
   if (top5.length === 0) {
-    container.innerHTML = '<div class="empty-state">まだ投稿がありません</div>';
+    container.innerHTML = '<div class="empty-state"><img src="images/yonabou_peeking.png" alt="よな坊" class="empty-mascot">まだ投稿がありません</div>';
     return;
   }
 
@@ -1521,7 +1522,7 @@ function renderYoutubeTopics() {
   if (!container) return;
 
   if (youtubeTopics.length === 0) {
-    container.innerHTML = '<div class="empty-state">討論テーマを準備中です</div>';
+    container.innerHTML = '<div class="empty-state"><img src="images/yonabou_peeking.png" alt="よな坊" class="empty-mascot">討論テーマを準備中です</div>';
     return;
   }
 
@@ -1760,6 +1761,23 @@ async function submitReportForm() {
     submitBtn.disabled = false;
     submitBtn.textContent = '通報を送信';
   }
+}
+
+// === よな坊サンクストースト ===
+function showYonaboThanks() {
+  var toast = document.createElement('div');
+  toast.className = 'yonabo-toast';
+  toast.innerHTML =
+    '<img src="images/yonabou_thank_you.png" alt="よな坊" class="yonabo-toast-img">' +
+    '<span>声を届けてくれてありがとう！</span>';
+  document.body.appendChild(toast);
+  requestAnimationFrame(function() {
+    toast.classList.add('show');
+  });
+  setTimeout(function() {
+    toast.classList.remove('show');
+    setTimeout(function() { toast.remove(); }, 400);
+  }, 3000);
 }
 
 document.addEventListener('DOMContentLoaded', init);
