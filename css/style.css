@@ -1931,6 +1931,84 @@ body {
   .logo {
     font-size: 1.15rem;
   }
+
+  .youtube-topics-list {
+    padding: 8px;
+    gap: 10px;
+  }
+
+  .yt-topic-card {
+    display: flex;
+    flex-direction: row;
+    border-radius: 8px;
+  }
+
+  .yt-thumb {
+    width: 140px;
+    min-height: 100px;
+    flex-shrink: 0;
+    aspect-ratio: auto;
+    border-radius: 8px 0 0 8px;
+  }
+
+  .yt-thumb-content {
+    padding: 8px;
+  }
+
+  .yt-thumb-hook {
+    font-size: 0.55rem;
+    margin-bottom: 2px;
+  }
+
+  .yt-thumb-title {
+    font-size: 0.72rem;
+    line-height: 1.25;
+  }
+
+  .yt-thumb-title .yt-keyword,
+  .yt-thumb-title .yt-keyword-red {
+    font-size: 0.8rem;
+  }
+
+  .yt-thumb-tag {
+    font-size: 0.5rem;
+    padding: 2px 6px;
+  }
+
+  .yt-thumb-accent {
+    font-size: 0.48rem;
+    padding: 2px 5px;
+    top: 4px;
+    right: 4px;
+  }
+
+  .yt-topic-body {
+    padding: 8px 10px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    flex: 1;
+    min-width: 0;
+  }
+
+  .yt-topic-subtitle {
+    font-size: 0.68rem;
+    margin-bottom: 6px;
+    line-height: 1.4;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .yt-vote-actions {
+    gap: 4px;
+  }
+
+  .yt-vote-btn {
+    font-size: 0.7rem;
+    padding: 5px 8px;
+  }
 }
 
 @media (max-width: 480px) {
