@@ -87,6 +87,8 @@
       <!-- サイト活動サマリー -->
       <div class="dashboard-summary" id="dashboardSummary"></div>
 
+      <div class="pending-reports-section" id="pendingReportsSection"></div>
+
       <div class="dashboard-section-title">📋 投稿データ分析</div>
       <div class="dashboard-grid">
         <section class="dashboard-card">
@@ -189,12 +191,13 @@
 
   <div class="post-form-overlay" id="resolveFormOverlay">
     <div class="post-form resolve-form">
-      <h3>🔧 改善報告</h3>
+      <h3>🎉 改善報告を送る</h3>
       <p class="resolve-target" id="resolveTarget"></p>
+      <p class="resolve-desc">この声に対して改善・変化があった場合、みんなに報告しよう！<br>管理者が確認後、サイトに反映されます。</p>
 
       <div class="form-group">
-        <label for="adminPassword">管理者パスワード</label>
-        <input type="password" id="adminPassword" placeholder="パスワードを入力">
+        <label for="resolveNickname">ニックネーム（任意）</label>
+        <input type="text" id="resolveNickname" placeholder="匿名さん" maxlength="20">
       </div>
 
       <div class="form-group">
@@ -204,7 +207,25 @@
 
       <div class="form-actions">
         <button class="btn-cancel" id="cancelResolve">キャンセル</button>
-        <button class="btn-submit btn-resolve-submit" id="submitResolve">✅ 改善報告する</button>
+        <button class="btn-submit btn-resolve-submit" id="submitResolve">📩 報告を送る</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="post-form-overlay" id="approveFormOverlay">
+    <div class="post-form approve-form">
+      <h3>🔑 管理者承認</h3>
+      <p class="approve-target" id="approveTarget"></p>
+
+      <div class="form-group">
+        <label for="approvePassword">管理者パスワード</label>
+        <input type="password" id="approvePassword" placeholder="パスワードを入力">
+      </div>
+
+      <div class="form-actions">
+        <button class="btn-cancel" id="cancelApprove">キャンセル</button>
+        <button class="btn-submit btn-reject-submit" id="rejectReport">❌ 却下</button>
+        <button class="btn-submit btn-approve-submit" id="approveReport">✅ 承認する</button>
       </div>
     </div>
   </div>

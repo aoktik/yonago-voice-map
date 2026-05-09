@@ -1506,7 +1506,7 @@ body {
   min-width: 60px;
 }
 
-/* Resolve form */
+/* Resolve form (citizen) */
 .resolve-form h3 {
   color: #059669;
 }
@@ -1514,8 +1514,19 @@ body {
 .resolve-target {
   font-size: 0.82rem;
   color: var(--text-sub);
-  margin-bottom: 16px;
+  margin-bottom: 4px;
   line-height: 1.5;
+}
+
+.resolve-desc {
+  font-size: 0.78rem;
+  color: var(--text-sub);
+  line-height: 1.6;
+  margin-bottom: 16px;
+  background: #f0fdf4;
+  border-radius: 8px;
+  padding: 10px 12px;
+  border: 1px solid #bbf7d0;
 }
 
 .btn-resolve-submit {
@@ -1524,6 +1535,142 @@ body {
 
 .btn-resolve-submit:hover {
   background: #059669 !important;
+}
+
+/* Approve form (admin) */
+.approve-form h3 {
+  color: var(--primary);
+}
+
+.approve-target {
+  font-size: 0.82rem;
+  color: var(--text);
+  margin-bottom: 16px;
+  line-height: 1.8;
+  background: var(--bg);
+  border-radius: 8px;
+  padding: 12px 14px;
+}
+
+.btn-approve-submit {
+  background: #10b981 !important;
+}
+
+.btn-approve-submit:hover {
+  background: #059669 !important;
+}
+
+.btn-reject-submit {
+  background: #ef4444 !important;
+}
+
+.btn-reject-submit:hover {
+  background: #dc2626 !important;
+}
+
+/* Pending reports in dashboard */
+.pending-reports-section {
+  margin-bottom: 8px;
+}
+
+.pending-count {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #ea580c;
+  background: #fff7ed;
+  padding: 2px 10px;
+  border-radius: 10px;
+  border: 1px solid #fed7aa;
+  margin-left: 8px;
+}
+
+.pending-reports-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.pending-report-card {
+  background: var(--bg);
+  border-radius: var(--radius);
+  padding: 16px;
+  border-left: 4px solid #f59e0b;
+}
+
+.pending-report-original {
+  margin-bottom: 4px;
+}
+
+.pending-original-msg {
+  font-size: 0.82rem;
+  color: var(--text-sub);
+  line-height: 1.4;
+  margin-top: 6px;
+}
+
+.pending-report-arrow {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #f59e0b;
+  margin: 6px 0;
+}
+
+.pending-report-content {
+  background: #fff7ed;
+  border-radius: 8px;
+  padding: 10px 12px;
+  margin-bottom: 10px;
+}
+
+.pending-report-msg {
+  font-size: 0.88rem;
+  color: var(--text);
+  line-height: 1.5;
+  margin-bottom: 6px;
+}
+
+.pending-report-meta {
+  font-size: 0.72rem;
+  color: var(--text-sub);
+}
+
+.pending-report-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.btn-pending-approve {
+  padding: 6px 16px;
+  border: none;
+  border-radius: 8px;
+  background: #10b981;
+  color: white;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-pending-approve:hover {
+  background: #059669;
+}
+
+.btn-pending-reject {
+  padding: 6px 16px;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  background: white;
+  color: #dc2626;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-pending-reject:hover {
+  background: #fef2f2;
 }
 
 .btn-resolve {

@@ -66,6 +66,8 @@ let activeFilter = 'all';
 let pendingLatLng = null;
 let selectedCategory = null;
 let pendingResolvePostId = null;
+let pendingApproveReportId = null;
+let resolveReports = [];
 
 // Supabase REST API helper
 function supabaseRequest(method, path, body) {
@@ -176,7 +178,7 @@ function initUI() {
   });
   document.getElementById('submitPost').addEventListener('click', submitPost);
 
-  // Resolve form events
+  // Resolve form events (citizen report)
   document.getElementById('cancelResolve').addEventListener('click', closeResolveForm);
   document.getElementById('resolveFormOverlay').addEventListener('click', function(e) {
     if (e.target === this) closeResolveForm();
@@ -186,6 +188,14 @@ function initUI() {
   resolveMsg.addEventListener('input', function() {
     document.getElementById('resolveCharCount').textContent = this.value.length + '/200';
   });
+
+  // Approve form events (admin)
+  document.getElementById('cancelApprove').addEventListener('click', closeApproveForm);
+  document.getElementById('approveFormOverlay').addEventListener('click', function(e) {
+    if (e.target === this) closeApproveForm();
+  });
+  document.getElementById('approveReport').addEventListener('click', function() { processReport('approve'); });
+  document.getElementById('rejectReport').addEventListener('click', function() { processReport('reject'); });
 
   var msgInput = document.getElementById('message');
   msgInput.addEventListener('input', function() {
@@ -379,13 +389,13 @@ function closePostForm() {
   selectedCategory = null;
 }
 
-// === 改善報告フォーム ===
+// === 改善報告フォーム（市民用） ===
 function openResolveForm(postId) {
   var post = posts.find(function(p) { return p.id === postId; });
   if (!post) return;
   pendingResolvePostId = postId;
   document.getElementById('resolveTarget').textContent = '📍 「' + post.message.slice(0, 40) + (post.message.length > 40 ? '...' : '') + '」';
-  document.getElementById('adminPassword').value = '';
+  document.getElementById('resolveNickname').value = '';
   document.getElementById('resolveMessage').value = '';
   document.getElementById('resolveCharCount').textContent = '0/200';
   document.getElementById('resolveFormOverlay').classList.add('active');
@@ -397,48 +407,163 @@ function closeResolveForm() {
 }
 
 async function submitResolve() {
-  var password = document.getElementById('adminPassword').value.trim();
   var message = sanitizeText(document.getElementById('resolveMessage').value, 200);
+  var nickname = sanitizeText(document.getElementById('resolveNickname').value, 20) || '匿名さん';
 
-  if (!password) {
-    alert('管理者パスワードを入力してください');
-    return;
-  }
   if (!message) {
     alert('改善内容を入力してください');
     return;
   }
   if (!pendingResolvePostId) return;
 
+  var modResult = moderateContent(message);
+  if (!modResult.ok) {
+    showModerationAlert(modResult.reason);
+    return;
+  }
+
   var submitBtn = document.getElementById('submitResolve');
   submitBtn.disabled = true;
   submitBtn.textContent = '送信中...';
 
   try {
-    var result = await supabaseRequest('POST', 'rpc/resolve_post', {
+    await supabaseRequest('POST', 'resolve_reports', {
       post_id: pendingResolvePostId,
-      password: password,
       message: message,
+      nickname: nickname,
     });
 
-    // Update local post data
-    var post = posts.find(function(p) { return p.id === pendingResolvePostId; });
-    if (post) {
-      post.resolved = true;
-      post.resolvedMessage = message;
-    }
-
     closeResolveForm();
-    renderPosts();
-    renderMarkers();
-    alert('✅ 改善報告が完了しました！');
+    alert('📩 改善報告を送信しました！\n管理者が確認後、サイトに反映されます。');
   } catch (e) {
-    console.error('Resolve failed:', e);
-    alert('改善報告に失敗しました。\nパスワードが正しいか確認してください。');
+    console.error('Resolve report failed:', e);
+    alert('送信に失敗しました。もう一度お試しください。');
   } finally {
     submitBtn.disabled = false;
-    submitBtn.textContent = '✅ 改善報告する';
+    submitBtn.textContent = '📩 報告を送る';
   }
+}
+
+// === 管理者承認フォーム ===
+function openApproveForm(reportId) {
+  var report = resolveReports.find(function(r) { return r.id === reportId; });
+  if (!report) return;
+  pendingApproveReportId = reportId;
+  var post = posts.find(function(p) { return p.id === report.post_id; });
+  var postMsg = post ? post.message.slice(0, 30) + (post.message.length > 30 ? '...' : '') : '(不明)';
+  document.getElementById('approveTarget').innerHTML =
+    '<strong>元の声:</strong> ' + escapeHtml(postMsg) + '<br>' +
+    '<strong>報告者:</strong> ' + escapeHtml(report.nickname) + '<br>' +
+    '<strong>改善内容:</strong> ' + escapeHtml(report.message);
+  document.getElementById('approvePassword').value = '';
+  document.getElementById('approveFormOverlay').classList.add('active');
+}
+
+function closeApproveForm() {
+  document.getElementById('approveFormOverlay').classList.remove('active');
+  pendingApproveReportId = null;
+}
+
+async function processReport(action) {
+  var password = document.getElementById('approvePassword').value.trim();
+  if (!password) {
+    alert('管理者パスワードを入力してください');
+    return;
+  }
+  if (!pendingApproveReportId) return;
+
+  var rpcName = action === 'approve' ? 'rpc/approve_report' : 'rpc/reject_report';
+  var approveBtn = document.getElementById('approveReport');
+  var rejectBtn = document.getElementById('rejectReport');
+  approveBtn.disabled = true;
+  rejectBtn.disabled = true;
+
+  try {
+    await supabaseRequest('POST', rpcName, {
+      report_id: pendingApproveReportId,
+      password: password,
+    });
+
+    if (action === 'approve') {
+      // Update local data
+      var report = resolveReports.find(function(r) { return r.id === pendingApproveReportId; });
+      if (report) {
+        report.status = 'approved';
+        var post = posts.find(function(p) { return p.id === report.post_id; });
+        if (post) {
+          post.resolved = true;
+          post.resolvedMessage = report.message;
+        }
+      }
+      alert('✅ 承認しました！改善済みとして反映されます。');
+    } else {
+      var rpt = resolveReports.find(function(r) { return r.id === pendingApproveReportId; });
+      if (rpt) rpt.status = 'rejected';
+      alert('❌ 却下しました。');
+    }
+
+    closeApproveForm();
+    renderPosts();
+    renderMarkers();
+    renderPendingReports();
+  } catch (e) {
+    console.error('Process report failed:', e);
+    alert('処理に失敗しました。\nパスワードが正しいか確認してください。');
+  } finally {
+    approveBtn.disabled = false;
+    rejectBtn.disabled = false;
+  }
+}
+
+// === 未承認レポート一覧（ダッシュボード内） ===
+function renderPendingReports() {
+  var container = document.getElementById('pendingReportsSection');
+  if (!container) return;
+
+  var pending = resolveReports.filter(function(r) { return r.status === 'pending'; });
+
+  if (pending.length === 0) {
+    container.innerHTML = '';
+    return;
+  }
+
+  var html = '<div class="dashboard-section-title">📬 未承認の改善報告 <span class="pending-count">' + pending.length + '件</span></div>';
+  html += '<div class="pending-reports-list">';
+
+  pending.forEach(function(report) {
+    var post = posts.find(function(p) { return p.id === report.post_id; });
+    var postMsg = post ? escapeHtml(post.message) : '(不明な投稿)';
+    var cat = post ? CATEGORIES.find(function(c) { return c.id === post.category; }) : null;
+    var catBadge = cat ? '<span class="post-category-badge" style="background:' + cat.color + '">' + cat.emoji + ' ' + cat.name + '</span>' : '';
+
+    html +=
+      '<div class="pending-report-card">' +
+        '<div class="pending-report-original">' +
+          catBadge +
+          '<p class="pending-original-msg">' + postMsg + '</p>' +
+        '</div>' +
+        '<div class="pending-report-arrow">↓ 改善報告</div>' +
+        '<div class="pending-report-content">' +
+          '<p class="pending-report-msg">' + escapeHtml(report.message) + '</p>' +
+          '<span class="pending-report-meta">報告者: ' + escapeHtml(report.nickname) + ' | ' + formatDate(report.created_at) + '</span>' +
+        '</div>' +
+        '<div class="pending-report-actions">' +
+          '<button class="btn-pending-approve" data-report-id="' + report.id + '">✅ 承認</button>' +
+          '<button class="btn-pending-reject" data-report-id="' + report.id + '">❌ 却下</button>' +
+        '</div>' +
+      '</div>';
+  });
+
+  html += '</div>';
+  container.innerHTML = html;
+
+  // Attach event listeners
+  container.querySelectorAll('.btn-pending-approve').forEach(function(btn) {
+    btn.addEventListener('click', function() { openApproveForm(btn.dataset.reportId); });
+  });
+  container.querySelectorAll('.btn-pending-reject').forEach(function(btn) {
+    btn.addEventListener('click', function() { openApproveForm(btn.dataset.reportId); });
+  });
 }
 
 function sanitizeText(str, maxLen) {
@@ -605,7 +730,7 @@ function renderMarkers() {
     }
     var popupResolveBtn = '';
     if (!post.resolved) {
-      popupResolveBtn = '<button class="popup-resolve-btn" data-post-id="' + escapeHtml(post.id) + '">🔧 改善報告</button>';
+      popupResolveBtn = '<button class="popup-resolve-btn" data-post-id="' + escapeHtml(post.id) + '">🎉 改善報告</button>';
     }
     var popupHtml = '<div class="popup-content">' +
       popupSampleNote +
@@ -663,7 +788,7 @@ function renderPosts() {
         '</div>';
     }
     var resolveButton = !post.resolved ?
-      '<button class="btn-resolve" data-id="' + post.id + '">🔧 改善報告</button>' : '';
+      '<button class="btn-resolve" data-id="' + post.id + '">🎉 改善報告</button>' : '';
     item.innerHTML =
       '<div class="post-item-header">' +
         '<span class="post-category-badge" style="background:' + cat.color + '">' + cat.emoji + ' ' + cat.name + '</span>' +
@@ -751,6 +876,7 @@ function closeDashboard() {
 }
 
 function renderDashboard() {
+  renderPendingReports();
   renderDashboardSummary();
   renderCategoryChart();
   renderResolvedChart();
@@ -1170,6 +1296,17 @@ async function loadData() {
   } catch (e) {
     console.error('Failed to load YouTube topics:', e);
     youtubeTopics = [];
+  }
+
+  // Load resolve reports from Supabase
+  try {
+    var reportData = await supabaseRequest('GET', 'resolve_reports?order=created_at.desc');
+    if (Array.isArray(reportData)) {
+      resolveReports = reportData;
+    }
+  } catch (e) {
+    console.error('Failed to load resolve reports:', e);
+    resolveReports = [];
   }
 }
 
