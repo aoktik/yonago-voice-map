@@ -1792,6 +1792,16 @@ body {
   background: #35a897;
 }
 
+.topic-detail-note-link.note-coming-soon {
+  background: #94a3b8;
+  cursor: default;
+  opacity: 0.85;
+}
+
+.topic-detail-note-link.note-coming-soon:hover {
+  background: #94a3b8;
+}
+
 .topic-detail-vote {
   border-top: 1px solid var(--border);
   padding-top: 12px;

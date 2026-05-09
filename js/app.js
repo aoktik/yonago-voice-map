@@ -1486,6 +1486,11 @@ function openTopicDetail(topicId) {
       '<a href="' + design.noteUrl + '" target="_blank" rel="noopener noreferrer" class="topic-detail-note-link">' +
         '📝 noteで詳しく読む' +
       '</a>';
+  } else {
+    noteLink =
+      '<span class="topic-detail-note-link note-coming-soon">' +
+        '📝 note記事 準備中' +
+      '</span>';
   }
 
   var html =
