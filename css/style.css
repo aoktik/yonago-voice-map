@@ -1937,68 +1937,62 @@ body {
     gap: 10px;
   }
 
-  .yt-topic-card {
-    display: flex;
-    flex-direction: row;
-    border-radius: 8px;
+  .youtube-topics-list {
+    padding: 8px;
+    gap: 10px;
   }
 
   .yt-thumb {
-    width: 140px;
-    min-height: 100px;
-    flex-shrink: 0;
-    aspect-ratio: auto;
-    border-radius: 8px 0 0 8px;
+    aspect-ratio: 16 / 9;
   }
 
   .yt-thumb-content {
-    padding: 8px;
+    padding: 10px;
   }
 
   .yt-thumb-hook {
-    font-size: 0.55rem;
+    font-size: 0.6rem;
     margin-bottom: 2px;
   }
 
   .yt-thumb-title {
-    font-size: 0.72rem;
+    font-size: 0.95rem;
     line-height: 1.25;
   }
 
   .yt-thumb-title .yt-keyword,
   .yt-thumb-title .yt-keyword-red {
-    font-size: 0.8rem;
+    font-size: 1.05rem;
   }
 
   .yt-thumb-tag {
-    font-size: 0.5rem;
+    font-size: 0.52rem;
     padding: 2px 6px;
   }
 
   .yt-thumb-accent {
-    font-size: 0.48rem;
-    padding: 2px 5px;
+    font-size: 0.5rem;
+    padding: 2px 6px;
     top: 4px;
     right: 4px;
   }
 
   .yt-topic-body {
-    padding: 8px 10px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    flex: 1;
-    min-width: 0;
+    padding: 6px 10px 8px;
   }
 
   .yt-topic-subtitle {
-    font-size: 0.68rem;
-    margin-bottom: 6px;
+    font-size: 0.7rem;
+    margin-bottom: 4px;
     line-height: 1.4;
     display: -webkit-box;
-    -webkit-line-clamp: 2;
+    -webkit-line-clamp: 1;
     -webkit-box-orient: vertical;
     overflow: hidden;
+  }
+
+  .yt-vote-bar-wrap {
+    margin-bottom: 4px;
   }
 
   .yt-vote-actions {
@@ -2006,7 +2000,7 @@ body {
   }
 
   .yt-vote-btn {
-    font-size: 0.7rem;
+    font-size: 0.72rem;
     padding: 5px 8px;
   }
 }
