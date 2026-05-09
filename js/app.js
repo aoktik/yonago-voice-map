@@ -89,8 +89,58 @@ async function init() {
   initUI();
   renderFilterButtons();
   await loadData();
+  await migrateLocalStorageToSupabase();
   renderPosts();
   renderMarkers();
+}
+
+async function migrateLocalStorageToSupabase() {
+  var MIGRATION_KEY = 'yonago_voice_migrated';
+  if (localStorage.getItem(MIGRATION_KEY)) return;
+
+  var stored = localStorage.getItem('yonago_voice_posts');
+  if (!stored) {
+    localStorage.setItem(MIGRATION_KEY, 'true');
+    return;
+  }
+
+  try {
+    var localPosts = JSON.parse(stored);
+    if (!Array.isArray(localPosts)) return;
+
+    var existingIds = new Set(posts.map(function(p) { return p.id; }));
+    var toMigrate = localPosts.filter(function(p) {
+      return p && p.id && !existingIds.has(p.id) && !isSamplePost(p)
+        && typeof p.message === 'string' && p.message.length > 0
+        && moderateContent(p.message).ok;
+    });
+
+    if (toMigrate.length > 0) {
+      var rows = toMigrate.map(function(p) {
+        return {
+          id: p.id,
+          lat: Number(p.lat),
+          lng: Number(p.lng),
+          category: VALID_CATEGORY_IDS.indexOf(p.category) !== -1 ? p.category : 'idea',
+          nickname: (p.nickname || '匿名さん').slice(0, 20),
+          message: p.message.slice(0, 200),
+          agrees: Number(p.agrees) || 0,
+          is_sample: false,
+        };
+      });
+
+      var result = await supabaseRequest('POST', 'posts', rows);
+      if (result) {
+        result.forEach(function(row) { posts.push(normalizePost(row)); });
+        posts.sort(function(a, b) { return new Date(b.createdAt) - new Date(a.createdAt); });
+      }
+    }
+
+    localStorage.setItem(MIGRATION_KEY, 'true');
+    localStorage.removeItem('yonago_voice_posts');
+  } catch (e) {
+    console.error('Migration failed:', e);
+  }
 }
 
 function initMap() {
