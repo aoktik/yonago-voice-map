@@ -309,6 +309,8 @@ async function submitPost() {
     message: msg,
     agrees: 0,
     is_sample: false,
+    resolved: false,
+    resolved_message: null,
   };
 
   var submitBtn = document.getElementById('submitPost');
@@ -345,6 +347,8 @@ function normalizePost(row) {
     message: row.message,
     agrees: row.agrees,
     isSample: row.is_sample,
+    resolved: row.resolved || false,
+    resolvedMessage: row.resolved_message || null,
     createdAt: row.created_at,
   };
 }
@@ -353,10 +357,11 @@ function isSamplePost(p) {
   return p.isSample || (p.id && p.id.indexOf('sample_') === 0);
 }
 
-function createMarkerIcon(cat) {
+function createMarkerIcon(cat, resolved) {
+  var resolvedBadge = resolved ? '<div style="position:absolute;top:-4px;right:-4px;font-size:11px;background:white;border-radius:50%;width:16px;height:16px;display:flex;align-items:center;justify-content:center;box-shadow:0 1px 3px rgba(0,0,0,0.3);">✅</div>' : '';
   return L.divIcon({
     className: 'custom-marker',
-    html: '<div style="background:' + cat.color + ';width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;box-shadow:0 2px 8px rgba(0,0,0,0.3);border:2px solid white;">' + cat.emoji + '</div>',
+    html: '<div style="position:relative;"><div style="background:' + cat.color + ';width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;box-shadow:0 2px 8px rgba(0,0,0,0.3);border:2px solid white;">' + cat.emoji + '</div>' + resolvedBadge + '</div>',
     iconSize: [32, 32],
     iconAnchor: [16, 32],
     popupAnchor: [0, -34],
@@ -373,14 +378,22 @@ function renderMarkers() {
     var cat = CATEGORIES.find(function(c) { return c.id === post.category; });
     if (!cat) return;
 
-    var marker = L.marker([post.lat, post.lng], { icon: createMarkerIcon(cat) }).addTo(map);
+    var marker = L.marker([post.lat, post.lng], { icon: createMarkerIcon(cat, post.resolved) }).addTo(map);
 
     var isPopupSample = isSamplePost(post);
     var popupSampleNote = isPopupSample ? '<div class="popup-sample-note">📌 これは投稿の一例です</div>' : '';
+    var popupResolved = '';
+    if (post.resolved && post.resolvedMessage) {
+      popupResolved = '<div class="popup-resolved">' +
+        '<div class="popup-resolved-label">✅ 改善されました</div>' +
+        '<div class="popup-resolved-msg">' + escapeHtml(post.resolvedMessage) + '</div>' +
+        '</div>';
+    }
     var popupHtml = '<div class="popup-content">' +
       popupSampleNote +
       '<span class="popup-category" style="background:' + cat.color + '">' + cat.emoji + ' ' + cat.name + '</span>' +
       '<p class="popup-message">' + escapeHtml(post.message) + '</p>' +
+      popupResolved +
       '<span class="popup-nickname">' + escapeHtml(post.nickname) + '</span>' +
       '<br><button class="popup-agree-btn" data-post-id="' + escapeHtml(post.id) + '">' +
       '👍 賛同 <span class="popup-agree-count">' + post.agrees + '</span></button>' +
@@ -417,13 +430,24 @@ function renderPosts() {
     item.className = 'post-item';
     var isSample = isSamplePost(post);
     var sampleBadge = isSample ? '<span class="sample-badge">📌 投稿例</span>' : '';
+    var resolvedBadge = post.resolved ? '<span class="resolved-badge">✅ 改善済み</span>' : '';
+    var resolvedSection = '';
+    if (post.resolved && post.resolvedMessage) {
+      resolvedSection =
+        '<div class="resolved-section">' +
+          '<div class="resolved-label">✅ 改善されました</div>' +
+          '<div class="resolved-message">' + escapeHtml(post.resolvedMessage) + '</div>' +
+        '</div>';
+    }
     item.innerHTML =
       '<div class="post-item-header">' +
         '<span class="post-category-badge" style="background:' + cat.color + '">' + cat.emoji + ' ' + cat.name + '</span>' +
         sampleBadge +
+        resolvedBadge +
         '<span class="post-nickname">' + escapeHtml(post.nickname) + '</span>' +
       '</div>' +
       '<p class="post-message">' + escapeHtml(post.message) + '</p>' +
+      resolvedSection +
       '<div class="post-footer">' +
         '<span class="post-date">' + formatDate(post.createdAt) + '</span>' +
         '<div class="post-agree">' +
