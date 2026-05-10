@@ -330,6 +330,90 @@ function initUI() {
 // === 検索機能 ===
 var searchMarker = null;
 
+// ローカル地名辞書（Nominatimで見つからない場所も即座にヒットさせる）
+var LOCAL_PLACES = [
+  // 駅
+  { name: '米子駅', kw: ['よなご駅', 'JR米子'], lat: 35.4228, lng: 133.3354 },
+  { name: '東山公園駅', kw: ['ひがしやまこうえん'], lat: 35.4308, lng: 133.3516 },
+  { name: '博労町駅', kw: ['ばくろうまち'], lat: 35.4311, lng: 133.3402 },
+  { name: '富士見町駅', kw: ['ふじみちょう'], lat: 35.4348, lng: 133.3364 },
+  { name: '後藤駅', kw: ['ごとう駅'], lat: 35.4396, lng: 133.3315 },
+  { name: '三本松口駅', kw: ['さんぼんまつぐち'], lat: 35.4463, lng: 133.3228 },
+  { name: '河崎口駅', kw: ['かわさきぐち'], lat: 35.4567, lng: 133.3055 },
+  { name: '伯耆大山駅', kw: ['ほうきだいせん'], lat: 35.4297, lng: 133.3836 },
+  { name: '淀江駅', kw: ['よどえ駅'], lat: 35.4570, lng: 133.4297 },
+  // 温泉・観光
+  { name: '皆生温泉', kw: ['かいけ温泉', 'かいけおんせん', '皆生'], lat: 35.4514, lng: 133.3576 },
+  { name: '皆生海岸', kw: ['かいけ海岸', '皆生海水浴場', '皆生ビーチ'], lat: 35.4560, lng: 133.3580 },
+  { name: '米子城跡', kw: ['米子城', '湊山城'], lat: 35.4250, lng: 133.3245 },
+  { name: '湊山公園', kw: ['みなとやま公園'], lat: 35.4281, lng: 133.3213 },
+  { name: '弓ヶ浜公園', kw: ['ゆみがはま'], lat: 35.4625, lng: 133.3213 },
+  // 公共施設
+  { name: '米子市役所', kw: ['市役所'], lat: 35.4279, lng: 133.3310 },
+  { name: '米子市立図書館', kw: ['図書館'], lat: 35.4284, lng: 133.3317 },
+  { name: '米子コンベンションセンター', kw: ['ビッグシップ', 'BigShip'], lat: 35.4211, lng: 133.3332 },
+  { name: '米子空港', kw: ['鬼太郎空港', '米子鬼太郎空港'], lat: 35.5019, lng: 133.2478 },
+  // 商業施設
+  { name: '米子高島屋', kw: ['高島屋', 'たかしまや'], lat: 35.4318, lng: 133.3330 },
+  { name: 'イオンモール日吉津', kw: ['イオン', 'イオンモール', '日吉津'], lat: 35.4456, lng: 133.3875 },
+  // 高校
+  { name: '米子東高校', kw: ['米子東高等学校', '米東'], lat: 35.4335, lng: 133.3439 },
+  { name: '米子西高校', kw: ['米子西高等学校', '米西'], lat: 35.4162, lng: 133.3284 },
+  { name: '米子北高校', kw: ['米子北高等学校', '米北'], lat: 35.4450, lng: 133.3368 },
+  { name: '米子松蔭高校', kw: ['米子松蔭高等学校', '松蔭'], lat: 35.4282, lng: 133.3892 },
+  { name: '米子工業高等専門学校', kw: ['米子高専', '高専'], lat: 35.4551, lng: 133.2889 },
+  // 大学・病院
+  { name: '鳥取大学医学部附属病院', kw: ['鳥大病院', '大学病院', '医学部'], lat: 35.4283, lng: 133.3243 },
+  { name: '山陰労災病院', kw: ['労災病院'], lat: 35.4519, lng: 133.3646 },
+  // 中学校
+  { name: '福米中学校', kw: ['福米中'], lat: 35.4562, lng: 133.3463 },
+  { name: '後藤ヶ丘中学校', kw: ['後藤ヶ丘中', 'ごとうがおか'], lat: 35.4423, lng: 133.3193 },
+  { name: '東山中学校', kw: ['東山中'], lat: 35.4269, lng: 133.3552 },
+  { name: '湊山中学校', kw: ['湊山中'], lat: 35.4211, lng: 133.3299 },
+  { name: '淀江中学校', kw: ['淀江中'], lat: 35.4533, lng: 133.4210 },
+  { name: '箕蚊屋中学校', kw: ['箕蚊屋中', 'みのかや'], lat: 35.4203, lng: 133.3879 },
+  // 小学校
+  { name: '就将小学校', kw: ['就将小', 'しゅうしょう'], lat: 35.4208, lng: 133.3308 },
+  { name: '明道小学校', kw: ['明道小', 'めいどう'], lat: 35.4263, lng: 133.3484 },
+  { name: '啓成小学校', kw: ['啓成小', 'けいせい'], lat: 35.4366, lng: 133.3413 },
+  { name: '義方小学校', kw: ['義方小', 'よしかた'], lat: 35.4387, lng: 133.3235 },
+  { name: '住吉小学校', kw: ['住吉小'], lat: 35.4445, lng: 133.3131 },
+  { name: '加茂小学校', kw: ['加茂小'], lat: 35.4596, lng: 133.3192 },
+  { name: '車尾小学校', kw: ['車尾小', 'くずも'], lat: 35.4321, lng: 133.3571 },
+  { name: '彦名小学校', kw: ['彦名小', 'ひこな'], lat: 35.4562, lng: 133.2917 },
+  { name: '崎津小学校', kw: ['崎津小', 'さきつ'], lat: 35.4765, lng: 133.2587 },
+  { name: '淀江小学校', kw: ['淀江小'], lat: 35.4510, lng: 133.4223 },
+  { name: '福生東小学校', kw: ['福生東小', 'ふくいけひがし'], lat: 35.4476, lng: 133.3600 },
+  { name: '成実小学校', kw: ['成実小', 'なるみ'], lat: 35.4018, lng: 133.3473 },
+  { name: '五千石小学校', kw: ['五千石小', 'ごせんごく'], lat: 35.3972, lng: 133.3769 },
+  { name: '大篠津小学校', kw: ['大篠津小', 'おおしのづ'], lat: 35.4903, lng: 133.2613 },
+  { name: '和田小学校', kw: ['和田小'], lat: 35.4885, lng: 133.2721 },
+  { name: '福米東小学校', kw: ['福米東小'], lat: 35.4449, lng: 133.3440 },
+  // エリア・自然
+  { name: '角盤町', kw: ['かくばんちょう', '角盤'], lat: 35.4317, lng: 133.3325 },
+  { name: '加茂川', kw: ['かもがわ'], lat: 35.4237, lng: 133.3485 },
+  { name: '日野川', kw: ['ひのがわ'], lat: 35.4210, lng: 133.3685 },
+];
+
+function searchLocalPlaces(query) {
+  var q = query.toLowerCase();
+  var results = [];
+  for (var i = 0; i < LOCAL_PLACES.length; i++) {
+    var p = LOCAL_PLACES[i];
+    if (p.name.indexOf(q) !== -1 || q.indexOf(p.name) !== -1) {
+      results.push(p);
+      continue;
+    }
+    for (var j = 0; j < p.kw.length; j++) {
+      if (p.kw[j].indexOf(q) !== -1 || q.indexOf(p.kw[j]) !== -1) {
+        results.push(p);
+        break;
+      }
+    }
+  }
+  return results;
+}
+
 function initSearch() {
   var input = document.getElementById('searchInput');
   var btn = document.getElementById('searchBtn');
@@ -349,6 +433,29 @@ async function doSearch() {
   btn.disabled = true;
   btn.textContent = '...';
 
+  // ローカル辞書を先に検索（高速・確実）
+  var localResults = searchLocalPlaces(query);
+  if (localResults.length > 0) {
+    var place = localResults[0];
+    if (searchMarker) map.removeLayer(searchMarker);
+    searchMarker = L.marker([place.lat, place.lng], {
+      icon: L.divIcon({
+        className: 'custom-marker',
+        html: '<div style="background:#2563eb;width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;box-shadow:0 2px 8px rgba(0,0,0,0.3);border:3px solid white;">🔍</div>',
+        iconSize: [36, 36],
+        iconAnchor: [18, 36],
+        popupAnchor: [0, -38],
+      })
+    }).addTo(map);
+    searchMarker.bindPopup('<div class="search-result-popup">🔍 ' + escapeHtml(place.name) + '</div>').openPopup();
+    map.setView([place.lat, place.lng], 16);
+    gtag('event', 'search', { search_term: query, source: 'local' });
+    btn.disabled = false;
+    btn.textContent = '🔍';
+    return;
+  }
+
+  // ローカルになければNominatimで検索
   try {
     var url = 'https://nominatim.openstreetmap.org/search?' +
       'q=' + encodeURIComponent(query + ' 米子市 鳥取県') +
@@ -376,7 +483,7 @@ async function doSearch() {
       }).addTo(map);
       searchMarker.bindPopup('<div class="search-result-popup">🔍 ' + escapeHtml(name) + '</div>').openPopup();
       map.setView([lat, lng], 16);
-      gtag('event', 'search', { search_term: query });
+      gtag('event', 'search', { search_term: query, source: 'nominatim' });
     } else {
       alert('「' + query + '」が見つかりませんでした。\n別のキーワードで試してみてください。');
     }
