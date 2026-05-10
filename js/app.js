@@ -503,7 +503,7 @@ async function doSearch() {
     map.setView([place.lat, place.lng], 16);
     gtag('event', 'search', { search_term: query, source: 'local' });
     btn.disabled = false;
-    btn.innerHTML = uiIcon('search', 16);
+    btn.innerHTML = uiIconWhite('search', 16);
     return;
   }
 
@@ -544,7 +544,7 @@ async function doSearch() {
     alert('検索に失敗しました。もう一度お試しください。');
   } finally {
     btn.disabled = false;
-    btn.innerHTML = uiIcon('search', 16);
+    btn.innerHTML = uiIconWhite('search', 16);
   }
 }
 
