@@ -587,9 +587,39 @@ body {
 }
 
 .category-option .cat-emoji {
-  font-size: 1.3rem;
   display: block;
   margin-bottom: 4px;
+}
+
+/* カテゴリアイコン共通 */
+.cat-icon {
+  vertical-align: middle;
+  display: inline-block;
+  object-fit: contain;
+}
+
+.cat-icon-circle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  flex-shrink: 0;
+  vertical-align: middle;
+}
+
+.post-category-badge .cat-icon,
+.popup-category .cat-icon,
+.yt-thumb-tag .cat-icon {
+  vertical-align: -2px;
+}
+
+.filter-btn .cat-icon-circle {
+  vertical-align: -3px;
+}
+
+.chart-label .cat-icon-circle,
+.resolved-cat-label .cat-icon-circle {
+  vertical-align: -4px;
 }
 
 .form-group input,

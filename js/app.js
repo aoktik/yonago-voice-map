@@ -26,15 +26,28 @@ var SUPABASE_URL = 'https://pqnuxkdfegydungyfnsq.supabase.co';
 var SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBxbnV4a2RmZWd5ZHVuZ3lmbnNxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgyNzUyMTgsImV4cCI6MjA5Mzg1MTIxOH0.exGLJP3uiCvLzyOhKrsxeDpXgdQyllBXjL5n8HASB7c';
 
 var CATEGORIES = [
-  { id: 'traffic',   emoji: '🚗', name: '交通・渋滞',     color: '#ef4444' },
-  { id: 'shop',      emoji: '🏪', name: '商業施設・誘致',  color: '#f59e0b' },
-  { id: 'nature',    emoji: '🏞️', name: '環境・景観',      color: '#10b981' },
-  { id: 'child',     emoji: '👶', name: '子育て・教育',    color: '#ec4899' },
-  { id: 'medical',   emoji: '🏥', name: '医療・福祉',      color: '#6366f1' },
-  { id: 'transport', emoji: '🚃', name: '公共交通',        color: '#0ea5e9' },
-  { id: 'infra',     emoji: '🏠', name: '住環境・インフラ', color: '#8b5cf6' },
-  { id: 'idea',      emoji: '💡', name: 'その他提案',      color: '#64748b' },
+  { id: 'traffic',   icon: 'images/icons/traffic.svg',   name: '交通・渋滞',     color: '#ef4444' },
+  { id: 'shop',      icon: 'images/icons/shop.svg',      name: '商業施設・誘致',  color: '#f59e0b' },
+  { id: 'nature',    icon: 'images/icons/nature.svg',     name: '環境・景観',      color: '#10b981' },
+  { id: 'child',     icon: 'images/icons/child.svg',      name: '子育て・教育',    color: '#ec4899' },
+  { id: 'medical',   icon: 'images/icons/medical.svg',    name: '医療・福祉',      color: '#6366f1' },
+  { id: 'transport', icon: 'images/icons/transport.svg',  name: '公共交通',        color: '#0ea5e9' },
+  { id: 'infra',     icon: 'images/icons/infra.svg',      name: '住環境・インフラ', color: '#8b5cf6' },
+  { id: 'idea',      icon: 'images/icons/idea.svg',       name: 'その他提案',      color: '#64748b' },
 ];
+
+// カテゴリアイコンHTML生成（色付き背景上で使用）
+function catIconHtml(cat, size) {
+  return '<img src="' + cat.icon + '" alt="" class="cat-icon" style="width:' + size + 'px;height:' + size + 'px;">';
+}
+
+// 明るい背景用: アイコンを小さな色付き丸の中に表示
+function catIconCircle(cat, size) {
+  var cs = size + 8;
+  return '<span class="cat-icon-circle" style="background:' + cat.color + ';width:' + cs + 'px;height:' + cs + 'px;">' +
+    '<img src="' + cat.icon + '" alt="" class="cat-icon" style="width:' + size + 'px;height:' + size + 'px;">' +
+    '</span>';
+}
 
 var VALID_CATEGORY_IDS = CATEGORIES.map(function(c) { return c.id; });
 
@@ -322,7 +335,7 @@ function initUI() {
     var btn = document.createElement('div');
     btn.className = 'category-option';
     btn.dataset.category = cat.id;
-    btn.innerHTML = '<span class="cat-emoji">' + cat.emoji + '</span>' + cat.name;
+    btn.innerHTML = '<span class="cat-emoji">' + catIconCircle(cat, 16) + '</span>' + cat.name;
     btn.addEventListener('click', function() {
       catSelect.querySelectorAll('.category-option').forEach(function(el) { el.classList.remove('selected'); });
       btn.classList.add('selected');
@@ -590,7 +603,7 @@ function renderFilterButtons() {
     var btn = document.createElement('button');
     btn.className = 'filter-btn';
     btn.dataset.category = cat.id;
-    btn.textContent = cat.emoji + ' ' + cat.name;
+    btn.innerHTML = catIconCircle(cat, 11) + ' ' + cat.name;
     container.appendChild(btn);
   });
 
@@ -806,7 +819,7 @@ function renderPendingReports() {
     var post = posts.find(function(p) { return p.id === report.post_id; });
     var postMsg = post ? escapeHtml(post.message) : '(不明な投稿)';
     var cat = post ? CATEGORIES.find(function(c) { return c.id === post.category; }) : null;
-    var catBadge = cat ? '<span class="post-category-badge" style="background:' + cat.color + '">' + cat.emoji + ' ' + cat.name + '</span>' : '';
+    var catBadge = cat ? '<span class="post-category-badge" style="background:' + cat.color + '">' + catIconHtml(cat, 12) + ' ' + cat.name + '</span>' : '';
 
     html +=
       '<div class="pending-report-card">' +
@@ -981,7 +994,7 @@ function createMarkerIcon(cat, resolved) {
   var resolvedBadge = resolved ? '<div style="position:absolute;top:-4px;right:-4px;font-size:11px;background:white;border-radius:50%;width:16px;height:16px;display:flex;align-items:center;justify-content:center;box-shadow:0 1px 3px rgba(0,0,0,0.3);">✅</div>' : '';
   return L.divIcon({
     className: 'custom-marker',
-    html: '<div style="position:relative;"><div style="background:' + cat.color + ';width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;box-shadow:0 2px 8px rgba(0,0,0,0.3);border:2px solid white;">' + cat.emoji + '</div>' + resolvedBadge + '</div>',
+    html: '<div style="position:relative;"><div style="background:' + cat.color + ';width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,0.3);border:2px solid white;">' + catIconHtml(cat, 18) + '</div>' + resolvedBadge + '</div>',
     iconSize: [32, 32],
     iconAnchor: [16, 32],
     popupAnchor: [0, -34],
@@ -1015,7 +1028,7 @@ function renderMarkers() {
     }
     var popupHtml = '<div class="popup-content">' +
       popupSampleNote +
-      '<span class="popup-category" style="background:' + cat.color + '">' + cat.emoji + ' ' + cat.name + '</span>' +
+      '<span class="popup-category" style="background:' + cat.color + '">' + catIconHtml(cat, 12) + ' ' + cat.name + '</span>' +
       '<p class="popup-message">' + escapeHtml(post.message) + '</p>' +
       popupResolved +
       '<span class="popup-nickname">' + escapeHtml(post.nickname) + '</span>' +
@@ -1077,7 +1090,7 @@ function renderPosts() {
       '<button class="btn-resolve" data-id="' + post.id + '">🎉 改善報告</button>' : '';
     item.innerHTML =
       '<div class="post-item-header">' +
-        '<span class="post-category-badge" style="background:' + cat.color + '">' + cat.emoji + ' ' + cat.name + '</span>' +
+        '<span class="post-category-badge" style="background:' + cat.color + '">' + catIconHtml(cat, 12) + ' ' + cat.name + '</span>' +
         sampleBadge +
         resolvedBadge +
         '<span class="post-nickname">' + escapeHtml(post.nickname) + '</span>' +
@@ -1205,7 +1218,7 @@ function renderCategoryChart() {
     var row = document.createElement('div');
     row.className = 'chart-row';
     row.innerHTML =
-      '<span class="chart-label">' + cat.emoji + ' ' + cat.name + '</span>' +
+      '<span class="chart-label">' + catIconCircle(cat, 12) + ' ' + cat.name + '</span>' +
       '<div class="chart-bar-wrap"><div class="chart-bar" style="width:' + pct + '%;background:' + cat.color + '"></div></div>' +
       '<span class="chart-value">' + count + '</span>';
     container.appendChild(row);
@@ -1230,7 +1243,7 @@ function renderTopRanking() {
     li.innerHTML =
       '<div class="rank-content">' +
         '<span class="rank-message">' + escapeHtml(post.message) + '</span>' +
-        '<span class="rank-meta">' + (cat ? cat.emoji + ' ' + cat.name : '') +
+        '<span class="rank-meta">' + (cat ? catIconCircle(cat, 11) + ' ' + cat.name : '') +
           ' | 👍 ' + post.agrees + ' | ' + escapeHtml(post.nickname) + '</span>' +
       '</div>';
     container.appendChild(li);
@@ -1275,7 +1288,7 @@ function renderHotTopics() {
     var card = document.createElement('div');
     card.className = 'hot-topic-card';
     card.innerHTML =
-      '<div class="hot-topic-area">' + (cat ? cat.emoji : '') + ' ' + (topCat ? topCat[0] : '') + '</div>' +
+      '<div class="hot-topic-area">' + (cat ? catIconCircle(cat, 12) : '') + ' ' + (topCat ? topCat[0] : '') + '</div>' +
       '<div class="hot-topic-summary">' + escapeHtml(topPost.message) + '</div>' +
       '<div class="hot-topic-count">' + area.posts.length + '件の声 | 👍 ' + area.totalAgrees + '</div>';
     container.appendChild(card);
@@ -1355,7 +1368,7 @@ function renderResolvedChart() {
     var catPct = Math.round(s.resolved / s.total * 100);
     catHtml +=
       '<div class="resolved-cat-row">' +
-        '<span class="resolved-cat-label">' + cat.emoji + ' ' + cat.name + '</span>' +
+        '<span class="resolved-cat-label">' + catIconCircle(cat, 12) + ' ' + cat.name + '</span>' +
         '<div class="resolved-cat-bar-wrap">' +
           '<div class="resolved-cat-bar" style="width:' + catPct + '%;background:' + cat.color + '"></div>' +
         '</div>' +
@@ -1387,7 +1400,7 @@ function renderResolvedRanking() {
     card.className = 'resolved-rank-card';
     card.innerHTML =
       '<div class="resolved-rank-voice">' +
-        '<span class="post-category-badge" style="background:' + (cat ? cat.color : '#999') + '">' + (cat ? cat.emoji + ' ' + cat.name : '') + '</span>' +
+        '<span class="post-category-badge" style="background:' + (cat ? cat.color : '#999') + '">' + (cat ? catIconHtml(cat, 12) + ' ' + cat.name : '') + '</span>' +
         '<p>' + escapeHtml(post.message) + '</p>' +
       '</div>' +
       '<div class="resolved-rank-result">' +
@@ -1718,7 +1731,7 @@ function renderYoutubeTopics() {
       '<div class="yt-thumb">' +
         '<div class="yt-thumb-bg"' + (design.photo ? ' style="background-image:url(\'' + design.photo + '\')"' : '') + '></div>' +
         '<div class="yt-thumb-overlay" style="background:' + design.overlay + '"></div>' +
-        '<div class="yt-thumb-tag" style="background:' + (cat ? cat.color : '#666') + '">' + (cat ? cat.emoji + ' ' + cat.name : '') + '</div>' +
+        '<div class="yt-thumb-tag" style="background:' + (cat ? cat.color : '#666') + '">' + (cat ? catIconHtml(cat, 12) + ' ' + cat.name : '') + '</div>' +
         '<div class="yt-thumb-accent">' + design.accent + '</div>' +
         '<div class="yt-thumb-content">' +
           '<div class="yt-thumb-hook">' + design.hook + '</div>' +
@@ -1795,7 +1808,7 @@ function openTopicDetail(topicId) {
       '<div class="yt-thumb">' +
         '<div class="yt-thumb-bg"' + (design.photo ? ' style="background-image:url(\'' + design.photo + '\')"' : '') + '></div>' +
         '<div class="yt-thumb-overlay" style="background:' + (design.overlay || '') + '"></div>' +
-        '<div class="yt-thumb-tag" style="background:' + (cat ? cat.color : '#666') + '">' + (cat ? cat.emoji + ' ' + cat.name : '') + '</div>' +
+        '<div class="yt-thumb-tag" style="background:' + (cat ? cat.color : '#666') + '">' + (cat ? catIconHtml(cat, 12) + ' ' + cat.name : '') + '</div>' +
         '<div class="yt-thumb-accent">' + (design.accent || '討論') + '</div>' +
         '<div class="yt-thumb-content">' +
           '<div class="yt-thumb-hook">' + (design.hook || '') + '</div>' +
