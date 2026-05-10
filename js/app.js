@@ -206,6 +206,7 @@ function initMap() {
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
     maxZoom: 19,
+    detectRetina: true,
   }).addTo(map);
 
   // 米子市の境界線を描画
