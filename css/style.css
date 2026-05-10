@@ -2591,6 +2591,31 @@ body {
   margin: 0 auto 12px;
 }
 
+.out-of-area-toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%) translateY(100px);
+  background: #1e293b;
+  color: #fff;
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+  padding: 14px 20px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  z-index: 10000;
+  opacity: 0;
+  transition: transform 0.4s ease, opacity 0.4s ease;
+  pointer-events: none;
+  max-width: 90vw;
+  text-align: center;
+}
+
+.out-of-area-toast.show {
+  transform: translateX(-50%) translateY(0);
+  opacity: 1;
+}
+
 .yonabo-toast {
   position: fixed;
   bottom: 24px;

@@ -409,6 +409,15 @@ function initLocate() {
         var lng = pos.coords.longitude;
         var accuracy = pos.coords.accuracy;
 
+        // 米子市外の場合はマップを移動せずトーストを表示
+        if (!isInYonago({ lat: lat, lng: lng })) {
+          btn.classList.remove('locating');
+          btn.textContent = '📍';
+          showOutOfAreaToast();
+          gtag('event', 'locate_outside');
+          return;
+        }
+
         if (locationMarker) map.removeLayer(locationMarker);
         if (locationCircle) map.removeLayer(locationCircle);
 
@@ -1831,6 +1840,21 @@ async function submitReportForm() {
     submitBtn.disabled = false;
     submitBtn.textContent = '通報を送信';
   }
+}
+
+// === 市外トースト ===
+function showOutOfAreaToast() {
+  var toast = document.createElement('div');
+  toast.className = 'out-of-area-toast';
+  toast.textContent = '現在地は米子市外のようです。マップから米子市の声をご覧ください 🗺️';
+  document.body.appendChild(toast);
+  requestAnimationFrame(function() {
+    toast.classList.add('show');
+  });
+  setTimeout(function() {
+    toast.classList.remove('show');
+    setTimeout(function() { toast.remove(); }, 400);
+  }, 4000);
 }
 
 // === よな坊サンクストースト ===
