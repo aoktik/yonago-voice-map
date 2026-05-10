@@ -97,6 +97,51 @@ body {
   text-decoration: underline;
 }
 
+.header-sns {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: 8px;
+}
+
+.sns-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #94a3b8;
+  transition: color 0.2s, transform 0.2s;
+}
+
+.sns-icon:hover {
+  color: #1e293b;
+  transform: scale(1.15);
+}
+
+.dashboard-sns {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 12px;
+}
+
+.sns-icon-lg {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #f1f5f9;
+  color: #64748b;
+  transition: background 0.2s, color 0.2s, transform 0.2s;
+}
+
+.sns-icon-lg:hover {
+  background: #3b82f6;
+  color: white;
+  transform: scale(1.1);
+}
+
 .header-right {
   display: flex;
   gap: 8px;
