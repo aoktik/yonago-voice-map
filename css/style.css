@@ -2829,3 +2829,223 @@ body {
     width: 110px;
   }
 }
+
+/* ===================================================
+   防災情報リンク集
+   =================================================== */
+
+/* ヘッダーボタン */
+.btn-disaster {
+  background: linear-gradient(135deg, #dc2626, #b91c1c);
+  color: #fff;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  transition: all 0.2s;
+  box-shadow: 0 2px 8px rgba(220,38,38,0.25);
+}
+.btn-disaster:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(220,38,38,0.35);
+}
+.disaster-btn-short { display: none; }
+
+/* モーダルオーバーレイ */
+.disaster-overlay {
+  display: none;
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.6);
+  z-index: 2000;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 40px 16px;
+  overflow-y: auto;
+  backdrop-filter: blur(4px);
+}
+.disaster-overlay.active { display: flex; }
+
+.disaster-modal {
+  background: #fff;
+  border-radius: 16px;
+  max-width: 560px;
+  width: 100%;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+  animation: disasterModalIn 0.25s ease;
+  overflow: hidden;
+}
+@keyframes disasterModalIn {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.disaster-modal-header {
+  background: linear-gradient(135deg, #dc2626, #991b1b);
+  color: #fff;
+  padding: 20px 24px;
+  position: relative;
+}
+.disaster-modal-header h2 {
+  font-size: 20px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.disaster-modal-header p {
+  font-size: 13px;
+  margin-top: 6px;
+  opacity: 0.85;
+  line-height: 1.5;
+}
+.disaster-close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background: rgba(255,255,255,0.2);
+  border: none;
+  color: #fff;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  font-size: 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+}
+.disaster-close:hover { background: rgba(255,255,255,0.35); }
+
+.disaster-modal-body {
+  padding: 20px 24px 24px;
+}
+
+/* 注意書き */
+.disaster-notice {
+  background: #fef3c7;
+  border: 1px solid #f59e0b;
+  border-radius: 10px;
+  padding: 12px 16px;
+  margin-bottom: 20px;
+  font-size: 12px;
+  color: #92400e;
+  line-height: 1.6;
+  display: flex;
+  gap: 8px;
+}
+.disaster-notice-icon { font-size: 18px; flex-shrink: 0; }
+
+/* セクション */
+.disaster-section { margin-bottom: 20px; }
+.disaster-section-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #1e293b;
+  margin-bottom: 10px;
+  padding-bottom: 6px;
+  border-bottom: 2px solid #e2e8f0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* リンクカード */
+.disaster-link {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  margin-bottom: 8px;
+  text-decoration: none;
+  color: #1e293b;
+  transition: all 0.2s;
+  background: #fff;
+}
+.disaster-link:hover {
+  border-color: #2563eb;
+  background: #f0f7ff;
+  transform: translateX(3px);
+}
+.disaster-link-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  flex-shrink: 0;
+}
+.icon-red { background: #fef2f2; }
+.icon-blue { background: #eff6ff; }
+.icon-green { background: #f0fdf4; }
+.icon-purple { background: #faf5ff; }
+.icon-orange { background: #fff7ed; }
+.icon-cyan { background: #ecfeff; }
+.disaster-link-text { flex: 1; min-width: 0; }
+.disaster-link-title { font-size: 14px; font-weight: 600; line-height: 1.3; }
+.disaster-link-desc { font-size: 11px; color: #64748b; margin-top: 2px; line-height: 1.4; }
+.disaster-link-badge {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+.badge-official { background: #dbeafe; color: #1d4ed8; }
+.badge-app { background: #f0fdf4; color: #166534; }
+.disaster-link-arrow { color: #94a3b8; font-size: 14px; flex-shrink: 0; }
+
+/* 緊急連絡先 */
+.emergency-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.emergency-card {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 10px;
+  padding: 12px;
+  text-align: center;
+  text-decoration: none;
+  color: #991b1b;
+  transition: all 0.2s;
+}
+.emergency-card:hover { background: #fee2e2; transform: scale(1.02); }
+.emergency-number { font-size: 24px; font-weight: 900; letter-spacing: 2px; }
+.emergency-label { font-size: 11px; margin-top: 2px; color: #b91c1c; }
+
+/* フッター */
+.disaster-modal-footer {
+  padding: 16px 24px;
+  background: #f8fafc;
+  border-top: 1px solid #e2e8f0;
+  font-size: 11px;
+  color: #94a3b8;
+  line-height: 1.6;
+  text-align: center;
+}
+
+/* モバイル対応 */
+@media (max-width: 768px) {
+  .disaster-btn-full { display: none; }
+  .disaster-btn-short { display: inline; }
+  .btn-disaster { padding: 6px 10px; font-size: 12px; }
+  .disaster-overlay { padding: 16px 10px; }
+  .disaster-modal-header { padding: 16px 18px; }
+  .disaster-modal-header h2 { font-size: 17px; }
+  .disaster-modal-body { padding: 16px 18px 20px; }
+  .disaster-link { padding: 10px 12px; }
+  .disaster-link-icon { width: 36px; height: 36px; font-size: 18px; }
+}

@@ -331,6 +331,13 @@ function initUI() {
     if (e.target === this) closeYonaboProfile();
   });
 
+  // 防災情報モーダル
+  document.getElementById('openDisaster').addEventListener('click', openDisasterModal);
+  document.getElementById('closeDisaster').addEventListener('click', closeDisasterModal);
+  document.getElementById('disasterOverlay').addEventListener('click', function(e) {
+    if (e.target === this) closeDisasterModal();
+  });
+
   // Cookie consent events
   var cookieAcceptBtn = document.getElementById('cookieAccept');
   var cookieDeclineBtn = document.getElementById('cookieDecline');
@@ -2005,6 +2012,17 @@ function openYonaboProfile() {
 
 function closeYonaboProfile() {
   document.getElementById('yonaboProfileOverlay').classList.remove('active');
+}
+
+// === 防災情報リンク集モーダル ===
+function openDisasterModal() {
+  document.getElementById('disasterOverlay').classList.add('active');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeDisasterModal() {
+  document.getElementById('disasterOverlay').classList.remove('active');
+  document.body.style.overflow = '';
 }
 
 async function voteTopic(topicId, vote) {
