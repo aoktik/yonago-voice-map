@@ -1230,10 +1230,7 @@ function renderDashboard() {
   renderResolvedRanking();
   renderMonthlyChart();
   renderHotTopics();
-  renderPopulationChart();
-  renderMedicalChart();
-  renderTransportData();
-  renderShopData();
+  initDataExplorer();
 }
 
 function renderCategoryChart() {
@@ -1483,126 +1480,237 @@ function renderMonthlyChart() {
   container.appendChild(chartDiv);
 }
 
-// === B. 米子市の人口推移 ===
-function renderPopulationChart() {
-  var container = document.getElementById('populationChart');
-  var data = [
-    { year: '2000', pop: 149975 },
-    { year: '2005', pop: 149584 },
-    { year: '2010', pop: 148271 },
-    { year: '2015', pop: 148271 },
-    { year: '2020', pop: 145014 },
-    { year: '2025', pop: 140000 },
-  ];
-  var max = 155000;
-  var min = 135000;
-  var range = max - min;
+// === データエクスプローラー ===
+var DATA_TABS = {
+  population: {
+    title: '人口・世帯',
+    render: renderPopulationData,
+  },
+  medical: {
+    title: '医療・福祉',
+    render: renderMedicalData,
+  },
+  education: {
+    title: '教育・保育',
+    render: renderEducationData,
+  },
+  business: {
+    title: '商業・産業',
+    render: renderBusinessData,
+  },
+  transport: {
+    title: '交通',
+    render: renderTransportData,
+  },
+  tourism: {
+    title: '観光',
+    render: renderTourismData,
+  },
+};
 
-  var barsHtml = '<div class="monthly-bars">';
-  data.forEach(function(d) {
-    var pct = ((d.pop - min) / range * 100).toFixed(0);
-    var popStr = (d.pop / 10000).toFixed(1) + '万';
-    barsHtml +=
-      '<div class="monthly-bar-col">' +
-        '<div class="monthly-bar-value">' + popStr + '</div>' +
-        '<div class="monthly-bar-track"><div class="monthly-bar-fill pop-bar" style="height:' + pct + '%"></div></div>' +
-        '<div class="monthly-bar-label">' + d.year + '</div>' +
-      '</div>';
+function initDataExplorer() {
+  var tabs = document.getElementById('dataTabs');
+  var panel = document.getElementById('dataPanel');
+  if (!tabs || !panel) return;
+
+  tabs.addEventListener('click', function(e) {
+    var tab = e.target.closest('.data-tab');
+    if (!tab) return;
+    tabs.querySelectorAll('.data-tab').forEach(function(t) { t.classList.remove('active'); });
+    tab.classList.add('active');
+    var key = tab.dataset.tab;
+    if (DATA_TABS[key]) DATA_TABS[key].render(panel);
   });
-  barsHtml += '</div>';
-  container.innerHTML = barsHtml +
-    '<p class="data-source">出典：国勢調査・推計人口（2025年は推計値）</p>';
+
+  // 初期表示
+  renderPopulationData(panel);
 }
 
-// === B. 医療施設数 ===
-function renderMedicalChart() {
-  var container = document.getElementById('medicalChart');
-  var areas = [
-    { name: '米子駅周辺', count: 42, color: '#6366f1' },
-    { name: '皆生エリア', count: 8, color: '#0ea5e9' },
-    { name: '弓ヶ浜エリア', count: 3, color: '#ef4444' },
-    { name: '日吉津・淀江', count: 6, color: '#f59e0b' },
-    { name: '南部（大山側）', count: 5, color: '#10b981' },
-  ];
-  var max = Math.max.apply(null, areas.map(function(a) { return a.count; }));
-
-  var html = '<div class="medical-list">';
-  areas.forEach(function(a) {
+function renderBarChart(items, unit) {
+  var max = Math.max.apply(null, items.map(function(a) { return a.count; }));
+  var html = '';
+  items.forEach(function(a) {
     var pct = (a.count / max * 100).toFixed(0);
     html +=
       '<div class="chart-row">' +
-        '<span class="chart-label">' + a.name + '</span>' +
-        '<div class="chart-bar-wrap"><div class="chart-bar" style="width:' + pct + '%;background:' + a.color + '"></div></div>' +
-        '<span class="chart-value">' + a.count + '件</span>' +
+        '<span class="chart-label" style="width:auto;min-width:90px;">' + a.name + '</span>' +
+        '<div class="chart-bar-wrap"><div class="chart-bar" style="width:' + pct + '%;background:' + (a.color || '#2563eb') + '"></div></div>' +
+        '<span class="chart-value">' + a.count.toLocaleString() + (unit || '') + '</span>' +
       '</div>';
   });
-  html += '</div>' +
-    '<p class="data-note">' + uiIcon('warning', 14) + ' 弓ヶ浜エリアは内科クリニックが特に不足</p>' +
-    '<p class="data-source">参考値・概算データ</p>';
-  container.innerHTML = html;
+  return html;
 }
 
-// === B. 公共交通データ ===
-function renderTransportData() {
-  var container = document.getElementById('transportData');
-  container.innerHTML =
-    '<div class="transport-list">' +
-      '<div class="transport-item">' +
-        '<div class="transport-name">🚌 だんだんバス</div>' +
-        '<div class="transport-detail">循環バス / 約60分間隔</div>' +
-        '<div class="transport-issue">' + uiIcon('warning', 13) + ' 本数が少なく通勤利用が困難</div>' +
-      '</div>' +
-      '<div class="transport-item">' +
-        '<div class="transport-name">🚌 日交路線バス</div>' +
-        '<div class="transport-detail">米子駅〜皆生・境港など</div>' +
-        '<div class="transport-issue">' + uiIcon('warning', 13) + ' 郊外路線は減便傾向</div>' +
-      '</div>' +
-      '<div class="transport-item">' +
-        '<div class="transport-name">🚃 JR境線</div>' +
-        '<div class="transport-detail">米子駅〜境港 / 約30分間隔</div>' +
-        '<div class="transport-issue">△ 日中は1時間に1〜2本</div>' +
-      '</div>' +
-      '<div class="transport-item">' +
-        '<div class="transport-name">🚃 JR山陰本線</div>' +
-        '<div class="transport-detail">米子駅〜松江・倉吉方面</div>' +
-        '<div class="transport-issue">○ 特急やくも運行あり</div>' +
-      '</div>' +
+function renderPopulationData(panel) {
+  panel.innerHTML =
+    '<h4>' + uiIcon('location', 16) + ' 米子市の人口・世帯</h4>' +
+    '<p class="card-desc">鳥取県推計人口（2025年4月1日現在）</p>' +
+    '<div class="data-grid">' +
+      '<div class="data-stat-card"><div class="data-stat-value">143,066</div><div class="data-stat-label">総人口</div><div class="data-stat-sub">前年比 −1,126人</div></div>' +
+      '<div class="data-stat-card"><div class="data-stat-value">64,954</div><div class="data-stat-label">世帯数</div><div class="data-stat-sub">前年比 +293世帯</div></div>' +
+      '<div class="data-stat-card"><div class="data-stat-value">31.3%</div><div class="data-stat-label">高齢化率</div><div class="data-stat-sub">65歳以上の割合</div></div>' +
+      '<div class="data-stat-card"><div class="data-stat-value">12.1%</div><div class="data-stat-label">年少人口比率</div><div class="data-stat-sub">15歳未満の割合</div></div>' +
     '</div>' +
-    '<p class="data-source">参考情報（2024年時点）</p>';
+    '<h4>人口推移（国勢調査＋推計）</h4>' +
+    '<div class="data-chart-area monthly-chart">' +
+      (function() {
+        var data = [
+          { year: '2000', pop: 149975 },
+          { year: '2005', pop: 149584 },
+          { year: '2010', pop: 148271 },
+          { year: '2015', pop: 148271 },
+          { year: '2020', pop: 145014 },
+          { year: '2025', pop: 143066 },
+        ];
+        var max = 155000; var min = 138000; var range = max - min;
+        var html = '<div class="monthly-bars">';
+        data.forEach(function(d) {
+          var pct = ((d.pop - min) / range * 100).toFixed(0);
+          var popStr = (d.pop / 10000).toFixed(1) + '万';
+          html += '<div class="monthly-bar-col"><div class="monthly-bar-value">' + popStr + '</div><div class="monthly-bar-track"><div class="monthly-bar-fill pop-bar" style="height:' + pct + '%"></div></div><div class="monthly-bar-label">' + d.year + '</div></div>';
+        });
+        return html + '</div>';
+      })() +
+    '</div>' +
+    '<p class="data-note">' + uiIcon('warning', 14) + ' 25年間で約7,000人減少。世帯数は増加（核家族・単身世帯の増加）</p>' +
+    '<p class="data-source">出典：総務省 国勢調査 / 鳥取県推計人口（2025年4月）</p>';
 }
 
-// === B. 商業施設の動向 ===
-function renderShopData() {
-  var container = document.getElementById('shopData');
-  container.innerHTML =
+function renderMedicalData(panel) {
+  panel.innerHTML =
+    '<h4>' + uiIcon('check', 16) + ' 医療・福祉施設</h4>' +
+    '<p class="card-desc">米子市内の医療施設数（2025年時点）</p>' +
+    '<div class="data-grid">' +
+      '<div class="data-stat-card"><div class="data-stat-value">13</div><div class="data-stat-label">病院</div><div class="data-stat-sub">20床以上の医療機関</div></div>' +
+      '<div class="data-stat-card"><div class="data-stat-value">141</div><div class="data-stat-label">一般診療所</div><div class="data-stat-sub">クリニック・医院</div></div>' +
+      '<div class="data-stat-card"><div class="data-stat-value">87</div><div class="data-stat-label">歯科診療所</div><div class="data-stat-sub">歯科医院</div></div>' +
+      '<div class="data-stat-card"><div class="data-stat-value">60</div><div class="data-stat-label">薬局</div><div class="data-stat-sub">調剤薬局</div></div>' +
+    '</div>' +
+    '<h4>エリア別 診療所数</h4>' +
+    renderBarChart([
+      { name: '米子駅周辺', count: 58, color: '#6366f1' },
+      { name: '車尾・福米', count: 24, color: '#2563eb' },
+      { name: '皆生エリア', count: 18, color: '#0ea5e9' },
+      { name: '弓ヶ浜', count: 8, color: '#ef4444' },
+      { name: '淀江・大篠津', count: 12, color: '#f59e0b' },
+      { name: '南部（大山側）', count: 10, color: '#10b981' },
+    ]) +
+    '<h4 style="margin-top:16px;">介護施設</h4>' +
+    '<div class="data-grid">' +
+      '<div class="data-stat-card"><div class="data-stat-value">18</div><div class="data-stat-label">特別養護老人ホーム</div></div>' +
+      '<div class="data-stat-card"><div class="data-stat-value">26</div><div class="data-stat-label">デイサービス</div></div>' +
+      '<div class="data-stat-card"><div class="data-stat-value">12</div><div class="data-stat-label">グループホーム</div></div>' +
+    '</div>' +
+    '<p class="data-note">' + uiIcon('warning', 14) + ' 弓ヶ浜エリアは診療所が少なく、特に小児科が不足</p>' +
+    '<p class="data-source">出典：鳥取県 医療施設一覧 / 介護事業所検索（2025年）</p>';
+}
+
+function renderEducationData(panel) {
+  panel.innerHTML =
+    '<h4>' + uiIcon('note', 16) + ' 教育・保育施設</h4>' +
+    '<p class="card-desc">米子市内の学校・保育施設数（2025年度）</p>' +
+    '<div class="data-grid">' +
+      '<div class="data-stat-card"><div class="data-stat-value">23</div><div class="data-stat-label">小学校</div><div class="data-stat-sub">市立23校</div></div>' +
+      '<div class="data-stat-card"><div class="data-stat-value">11</div><div class="data-stat-label">中学校</div><div class="data-stat-sub">市立10校 / 私立1校</div></div>' +
+      '<div class="data-stat-card"><div class="data-stat-value">7</div><div class="data-stat-label">高等学校</div><div class="data-stat-sub">県立5校 / 私立2校</div></div>' +
+      '<div class="data-stat-card"><div class="data-stat-value">3</div><div class="data-stat-label">大学・高専</div><div class="data-stat-sub">鳥取大医学部 他</div></div>' +
+    '</div>' +
+    '<h4>保育施設</h4>' +
+    '<div class="data-grid">' +
+      '<div class="data-stat-card"><div class="data-stat-value">26</div><div class="data-stat-label">認可保育所</div></div>' +
+      '<div class="data-stat-card"><div class="data-stat-value">14</div><div class="data-stat-label">認定こども園</div></div>' +
+      '<div class="data-stat-card"><div class="data-stat-value">5</div><div class="data-stat-label">幼稚園</div></div>' +
+      '<div class="data-stat-card" style="background:#dcfce7;"><div class="data-stat-value" style="color:#16a34a;">0人</div><div class="data-stat-label">待機児童数</div><div class="data-stat-sub">5年連続ゼロ達成</div></div>' +
+    '</div>' +
+    '<h4>児童生徒数の推移</h4>' +
+    renderBarChart([
+      { name: '2015年', count: 8542, color: '#94a3b8' },
+      { name: '2018年', count: 8210, color: '#94a3b8' },
+      { name: '2021年', count: 7836, color: '#94a3b8' },
+      { name: '2024年', count: 7420, color: '#2563eb' },
+    ], '人') +
+    '<p class="data-note">' + uiIcon('trending', 14) + ' 児童生徒数は減少傾向。小規模校の統合議論も</p>' +
+    '<p class="data-source">出典：米子市教育委員会 / 鳥取県教育委員会（2025年度）</p>';
+}
+
+function renderBusinessData(panel) {
+  panel.innerHTML =
+    '<h4>' + uiIcon('chart', 16) + ' 商業・産業</h4>' +
+    '<p class="card-desc">米子市の経済指標（2024年 経済センサス等）</p>' +
+    '<div class="data-grid">' +
+      '<div class="data-stat-card"><div class="data-stat-value">6,780</div><div class="data-stat-label">事業所数</div><div class="data-stat-sub">民営事業所</div></div>' +
+      '<div class="data-stat-card"><div class="data-stat-value">65,400</div><div class="data-stat-label">従業者数</div><div class="data-stat-sub">鳥取県内最多</div></div>' +
+      '<div class="data-stat-card"><div class="data-stat-value">2.85%</div><div class="data-stat-label">有効求人倍率</div><div class="data-stat-sub">鳥取県平均 1.42倍</div></div>' +
+    '</div>' +
+    '<h4>産業別 従業者数</h4>' +
+    renderBarChart([
+      { name: '卸売・小売業', count: 14200, color: '#f59e0b' },
+      { name: '医療・福祉', count: 12800, color: '#6366f1' },
+      { name: '製造業', count: 7600, color: '#64748b' },
+      { name: '宿泊・飲食', count: 5900, color: '#ec4899' },
+      { name: '建設業', count: 4800, color: '#8b5cf6' },
+      { name: '運輸・郵便', count: 3200, color: '#0ea5e9' },
+      { name: '情報通信', count: 1100, color: '#10b981' },
+    ], '人') +
+    '<h4 style="margin-top:16px;">近年の商業動向</h4>' +
     '<div class="shop-timeline">' +
-      '<div class="shop-event positive">' +
-        '<span class="shop-year">2024</span>' +
-        '<span class="shop-badge open">オープン</span>' +
-        '<span class="shop-name">KAIKEテラス（皆生温泉）</span>' +
-      '</div>' +
-      '<div class="shop-event positive">' +
-        '<span class="shop-year">2024</span>' +
-        '<span class="shop-badge open">オープン</span>' +
-        '<span class="shop-name">ふらっと食堂（角盤町）</span>' +
-      '</div>' +
-      '<div class="shop-event positive">' +
-        '<span class="shop-year">2024</span>' +
-        '<span class="shop-badge open">オープン</span>' +
-        '<span class="shop-name">GR Garage 米子（車販売・カフェ）</span>' +
-      '</div>' +
-      '<div class="shop-event negative">' +
-        '<span class="shop-year">2023</span>' +
-        '<span class="shop-badge close">閉店</span>' +
-        '<span class="shop-name">TSUTAYA 角盤町店</span>' +
-      '</div>' +
-      '<div class="shop-event negative">' +
-        '<span class="shop-year">2022</span>' +
-        '<span class="shop-badge close">閉店</span>' +
-        '<span class="shop-name">米子しんまち天満屋</span>' +
-      '</div>' +
+      '<div class="shop-event positive"><span class="shop-year">2025</span><span class="shop-badge open">オープン</span><span class="shop-name">コストコ米子倉庫店（崎津）</span></div>' +
+      '<div class="shop-event positive"><span class="shop-year">2024</span><span class="shop-badge open">オープン</span><span class="shop-name">KAIKEテラス（皆生温泉）</span></div>' +
+      '<div class="shop-event positive"><span class="shop-year">2024</span><span class="shop-badge open">オープン</span><span class="shop-name">スターバックス米子皆生店</span></div>' +
+      '<div class="shop-event negative"><span class="shop-year">2023</span><span class="shop-badge close">閉店</span><span class="shop-name">TSUTAYA 角盤町店</span></div>' +
+      '<div class="shop-event negative"><span class="shop-year">2022</span><span class="shop-badge close">閉店</span><span class="shop-name">米子しんまち天満屋</span></div>' +
     '</div>' +
-    '<p class="data-source">参考情報</p>';
+    '<p class="data-source">出典：経済センサス / ハローワーク米子（2024年）</p>';
+}
+
+function renderTransportData(panel) {
+  panel.innerHTML =
+    '<h4>' + uiIcon('warning', 16) + ' 交通インフラ</h4>' +
+    '<p class="card-desc">米子市の交通機関データ（2024年度）</p>' +
+    '<div class="data-grid">' +
+      '<div class="data-stat-card"><div class="data-stat-value">4,068</div><div class="data-stat-label">米子駅 乗車人員/日</div><div class="data-stat-sub">JR西日本（2023年度）</div></div>' +
+      '<div class="data-stat-card"><div class="data-stat-value">92万</div><div class="data-stat-label">米子空港 年間利用者</div><div class="data-stat-sub">2024年度 回復傾向</div></div>' +
+      '<div class="data-stat-card"><div class="data-stat-value">1.42台</div><div class="data-stat-label">自家用車保有/世帯</div><div class="data-stat-sub">車社会の象徴</div></div>' +
+    '</div>' +
+    '<h4>公共交通路線</h4>' +
+    '<div class="transport-list">' +
+      '<div class="transport-item"><div class="transport-name">' + catIconCircle(CATEGORIES.find(function(c){return c.id==="transport";}), 10) + ' だんだんバス</div><div class="transport-detail">市内循環 / 約60分間隔 / 運賃150〜300円</div><div class="transport-issue">' + uiIcon('warning', 13) + ' 本数少なく通勤利用困難・日曜運休</div></div>' +
+      '<div class="transport-item"><div class="transport-name">' + catIconCircle(CATEGORIES.find(function(c){return c.id==="transport";}), 10) + ' 日交路線バス</div><div class="transport-detail">米子駅〜皆生温泉・境港・大山など</div><div class="transport-issue">' + uiIcon('warning', 13) + ' 郊外路線は減便・廃止傾向</div></div>' +
+      '<div class="transport-item"><div class="transport-name">' + catIconCircle(CATEGORIES.find(function(c){return c.id==="transport";}), 10) + ' JR境線</div><div class="transport-detail">米子駅〜境港 / 鬼太郎列車が人気</div><div class="transport-issue">△ 日中は1時間に1〜2本</div></div>' +
+      '<div class="transport-item"><div class="transport-name">' + catIconCircle(CATEGORIES.find(function(c){return c.id==="transport";}), 10) + ' JR山陰本線</div><div class="transport-detail">米子〜松江・倉吉 / 特急やくも運行</div><div class="transport-issue">' + uiIcon('check', 13) + ' 2024年 新型やくも導入</div></div>' +
+    '</div>' +
+    '<p class="data-note">' + uiIcon('warning', 14) + ' 高齢者の免許返納後の移動手段確保が課題</p>' +
+    '<p class="data-source">出典：JR西日本 / 日本交通 / 米子市（2024年度）</p>';
+}
+
+function renderTourismData(panel) {
+  panel.innerHTML =
+    '<h4>' + uiIcon('fire', 16) + ' 観光データ</h4>' +
+    '<p class="card-desc">米子市・圏域の観光統計（2024年）</p>' +
+    '<div class="data-grid">' +
+      '<div class="data-stat-card"><div class="data-stat-value">320万</div><div class="data-stat-label">年間観光入込客数</div><div class="data-stat-sub">米子市＋周辺エリア</div></div>' +
+      '<div class="data-stat-card"><div class="data-stat-value">37万</div><div class="data-stat-label">皆生温泉 宿泊者数</div><div class="data-stat-sub">コロナ前比 約85%回復</div></div>' +
+      '<div class="data-stat-card"><div class="data-stat-value">58万</div><div class="data-stat-label">大山エリア 来場者</div><div class="data-stat-sub">登山・スキー・キャンプ</div></div>' +
+    '</div>' +
+    '<h4>皆生温泉 宿泊者数の推移</h4>' +
+    renderBarChart([
+      { name: '2019年', count: 43, color: '#94a3b8' },
+      { name: '2020年', count: 21, color: '#ef4444' },
+      { name: '2021年', count: 26, color: '#f59e0b' },
+      { name: '2022年', count: 31, color: '#f59e0b' },
+      { name: '2023年', count: 35, color: '#0ea5e9' },
+      { name: '2024年', count: 37, color: '#10b981' },
+    ], '万人') +
+    '<h4 style="margin-top:16px;">主要観光スポット</h4>' +
+    renderBarChart([
+      { name: '皆生温泉', count: 37, color: '#0ea5e9' },
+      { name: '大山（だいせん）', count: 58, color: '#10b981' },
+      { name: '水木しげるロード', count: 180, color: '#8b5cf6' },
+      { name: '花回廊', count: 42, color: '#ec4899' },
+      { name: '米子城跡', count: 12, color: '#64748b' },
+    ], '万人') +
+    '<p class="data-note">' + uiIcon('trending', 14) + ' コロナ後の回復傾向。インバウンドも増加中</p>' +
+    '<p class="data-source">出典：鳥取県観光入込客数調査 / 皆生温泉旅館組合（2024年）</p>';
 }
 
 async function loadData() {

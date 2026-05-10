@@ -26,7 +26,7 @@
   <!-- Google Analytics (初期化はapp.jsで実行 - CSP対応) -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-759KNPK2B6"></script>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha384-sHL9NAb7lN7rfvG5lfHpm643Xkcjzp4jFvuavGOndn6pjVqS6ny56CAt3nsEVT4H" crossorigin="anonymous" />
-  <link rel="stylesheet" href="css/style.css?v=20260511c">
+  <link rel="stylesheet" href="css/style.css?v=20260511d">
 </head>
 <body>
   <header class="header">
@@ -149,31 +149,17 @@
         </section>
       </div>
 
-      <div class="dashboard-section-title">🏙 米子市データ</div>
-      <div class="dashboard-grid">
-        <section class="dashboard-card">
-          <h3>👥 米子市の人口推移</h3>
-          <p class="card-desc">国勢調査・推計人口より</p>
-          <div id="populationChart" class="monthly-chart"></div>
-        </section>
-
-        <section class="dashboard-card">
-          <h3>🏥 エリア別 医療施設数</h3>
-          <p class="card-desc">内科・小児科クリニック</p>
-          <div id="medicalChart"></div>
-        </section>
-
-        <section class="dashboard-card">
-          <h3>🚌 公共交通データ</h3>
-          <p class="card-desc">だんだんバス・路線バスの現状</p>
-          <div id="transportData"></div>
-        </section>
-
-        <section class="dashboard-card">
-          <h3>🏪 商業施設の動向</h3>
-          <p class="card-desc">近年の出店・閉店</p>
-          <div id="shopData"></div>
-        </section>
+      <div class="dashboard-section-title"><img src="images/icons/chart.svg" alt="" class="ui-icon" style="width:16px;height:16px;"> 米子市データ</div>
+      <div class="data-explorer">
+        <div class="data-tabs" id="dataTabs">
+          <button class="data-tab active" data-tab="population">人口・世帯</button>
+          <button class="data-tab" data-tab="medical">医療・福祉</button>
+          <button class="data-tab" data-tab="education">教育・保育</button>
+          <button class="data-tab" data-tab="business">商業・産業</button>
+          <button class="data-tab" data-tab="transport">交通</button>
+          <button class="data-tab" data-tab="tourism">観光</button>
+        </div>
+        <div class="data-panel" id="dataPanel"></div>
       </div>
 
       <div class="dashboard-footer">
@@ -417,6 +403,6 @@
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha384-cxOPjt7s7Iz04uaHJceBmS+qpjv2JkIHNVcuOrM+YHwZOmJGBXI00mdUXEq65HTH" crossorigin="anonymous"></script>
   <script src="js/yonago-boundary.js"></script>
-  <script src="js/app.js?v=20260511c"></script>
+  <script src="js/app.js?v=20260511d"></script>
 </body>
 </html>
