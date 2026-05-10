@@ -1,15 +1,20 @@
-// GA4 safe wrapper (avoids crash if gtag not loaded)
-if (typeof gtag === 'undefined') { window.gtag = function() {}; }
-
-// === Cookie同意管理 ===
+// === Cookie同意管理 & GA4初期化（CSP対応: インラインスクリプト不使用） ===
 (function() {
   var consent = localStorage.getItem('yonago_cookie_consent');
+
+  // 拒否済みならGA4を無効化
   if (consent === 'declined') {
-    // GA4を無効化
     window['ga-disable-G-759KNPK2B6'] = true;
   }
+
+  // GA4初期化（インラインスクリプトからここに移動）
+  window.dataLayer = window.dataLayer || [];
+  window.gtag = function() { dataLayer.push(arguments); };
+  gtag('js', new Date());
+  gtag('config', 'G-759KNPK2B6');
+
+  // 未選択ならバナー表示
   if (!consent) {
-    // 同意バナーを表示
     document.addEventListener('DOMContentLoaded', function() {
       var banner = document.getElementById('cookieConsent');
       if (banner) banner.classList.add('active');
