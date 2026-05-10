@@ -1025,9 +1025,10 @@ async function toggleAgree(postId) {
   // Save agreed set to localStorage (per-user preference)
   localStorage.setItem('yonago_voice_agreed', JSON.stringify(Array.from(agreedSet)));
 
-  // Update agrees count in Supabase
+  // Update agrees count in Supabase via RPC (delta only: +1 or -1)
+  var delta = agreedSet.has(postId) ? 1 : -1;
   try {
-    await supabaseRequest('PATCH', 'posts?id=eq.' + encodeURIComponent(postId), { agrees: post.agrees });
+    await supabaseRequest('POST', 'rpc/toggle_agree', { p_post_id: postId, p_delta: delta });
   } catch (e) {
     console.error('Failed to update agrees');
   }
@@ -1750,14 +1751,27 @@ async function voteTopic(topicId, vote) {
     topicVotes[topicId] = vote;
   }
 
+  // Calculate deltas for RPC call
+  var likesDelta = 0;
+  var dislikesDelta = 0;
+  if (prev === vote) {
+    // Cancelled same vote
+    if (vote === 'like') likesDelta = -1; else dislikesDelta = -1;
+  } else {
+    if (prev === 'like') likesDelta = -1;
+    else if (prev === 'dislike') dislikesDelta = -1;
+    if (vote === 'like') likesDelta += 1; else dislikesDelta += 1;
+  }
+
   localStorage.setItem('yonago_topic_votes', JSON.stringify(topicVotes));
   gtag('event', 'topic_vote', { vote: vote });
   renderYoutubeTopics();
 
   try {
-    await supabaseRequest('PATCH', 'youtube_topics?id=eq.' + encodeURIComponent(topicId), {
-      likes: topic.likes,
-      dislikes: topic.dislikes,
+    await supabaseRequest('POST', 'rpc/update_topic_vote', {
+      p_topic_id: topicId,
+      p_likes_delta: likesDelta,
+      p_dislikes_delta: dislikesDelta,
     });
   } catch (e) {
     console.error('Failed to update topic votes');
