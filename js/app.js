@@ -167,7 +167,7 @@ async function migrateLocalStorageToSupabase() {
     localStorage.setItem(MIGRATION_KEY, 'true');
     localStorage.removeItem('yonago_voice_posts');
   } catch (e) {
-    console.error('Migration failed:', e);
+    console.error('Migration failed');
   }
 }
 
@@ -380,7 +380,7 @@ async function doSearch() {
       alert('「' + query + '」が見つかりませんでした。\n別のキーワードで試してみてください。');
     }
   } catch (e) {
-    console.error('Search failed:', e);
+    console.error('Search failed');
     alert('検索に失敗しました。もう一度お試しください。');
   } finally {
     btn.disabled = false;
@@ -585,7 +585,7 @@ async function submitResolve() {
     gtag('event', 'resolve_report_submit');
     alert('📩 改善報告を送信しました！\n管理者が確認後、サイトに反映されます。');
   } catch (e) {
-    console.error('Resolve report failed:', e);
+    console.error('Resolve report failed');
     alert('送信に失敗しました。もう一度お試しください。');
   } finally {
     submitBtn.disabled = false;
@@ -657,7 +657,7 @@ async function processReport(action) {
     renderMarkers();
     renderPendingReports();
   } catch (e) {
-    console.error('Process report failed:', e);
+    console.error('Process report failed');
     alert('処理に失敗しました。\nパスワードが正しいか確認してください。');
   } finally {
     approveBtn.disabled = false;
@@ -698,8 +698,8 @@ function renderPendingReports() {
           '<span class="pending-report-meta">報告者: ' + escapeHtml(report.nickname) + ' | ' + formatDate(report.created_at) + '</span>' +
         '</div>' +
         '<div class="pending-report-actions">' +
-          '<button class="btn-pending-approve" data-report-id="' + report.id + '">✅ 承認</button>' +
-          '<button class="btn-pending-reject" data-report-id="' + report.id + '">❌ 却下</button>' +
+          '<button class="btn-pending-approve" data-report-id="' + escapeHtml(report.id) + '">✅ 承認</button>' +
+          '<button class="btn-pending-reject" data-report-id="' + escapeHtml(report.id) + '">❌ 却下</button>' +
         '</div>' +
       '</div>';
   });
@@ -828,7 +828,7 @@ async function submitPost() {
     gtag('event', 'post_submit', { category: selectedCategory });
   } catch (e) {
     alert('投稿に失敗しました。もう一度お試しください。');
-    console.error(e);
+    console.error('Post submit failed');
   } finally {
     submitBtn.disabled = false;
     submitBtn.textContent = '投稿する';
@@ -1029,7 +1029,7 @@ async function toggleAgree(postId) {
   try {
     await supabaseRequest('PATCH', 'posts?id=eq.' + encodeURIComponent(postId), { agrees: post.agrees });
   } catch (e) {
-    console.error('Failed to update agrees:', e);
+    console.error('Failed to update agrees');
   }
 
   renderPosts();
@@ -1459,7 +1459,7 @@ async function loadData() {
       posts = data.map(normalizePost);
     }
   } catch (e) {
-    console.error('Failed to load posts from Supabase:', e);
+    console.error('Failed to load posts');
     posts = [];
   }
 
@@ -1470,7 +1470,7 @@ async function loadData() {
       youtubeTopics = topicData;
     }
   } catch (e) {
-    console.error('Failed to load YouTube topics:', e);
+    console.error('Failed to load YouTube topics');
     youtubeTopics = [];
   }
 
@@ -1481,7 +1481,7 @@ async function loadData() {
       resolveReports = reportData;
     }
   } catch (e) {
-    console.error('Failed to load resolve reports:', e);
+    console.error('Failed to load resolve reports');
     resolveReports = [];
   }
 }
@@ -1760,7 +1760,7 @@ async function voteTopic(topicId, vote) {
       dislikes: topic.dislikes,
     });
   } catch (e) {
-    console.error('Failed to update topic votes:', e);
+    console.error('Failed to update topic votes');
   }
 }
 
@@ -1811,7 +1811,7 @@ async function submitReportForm() {
     gtag('event', 'post_report', { reason: reason.value });
     alert('通報を送信しました。\n管理者が確認いたします。ご協力ありがとうございます。');
   } catch (e) {
-    console.error('Report failed:', e);
+    console.error('Report failed');
     alert('通報の送信に失敗しました。もう一度お試しください。');
   } finally {
     submitBtn.disabled = false;
