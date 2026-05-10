@@ -26,7 +26,7 @@
   <!-- Google Analytics (初期化はapp.jsで実行 - CSP対応) -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-759KNPK2B6"></script>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha384-sHL9NAb7lN7rfvG5lfHpm643Xkcjzp4jFvuavGOndn6pjVqS6ny56CAt3nsEVT4H" crossorigin="anonymous" />
-  <link rel="stylesheet" href="css/style.css?v=20260511b">
+  <link rel="stylesheet" href="css/style.css?v=20260511c">
 </head>
 <body>
   <header class="header">
@@ -36,7 +36,7 @@
         <p class="tagline">あなたの声が、まちを変える。</p>
       </div>
       <div class="header-right">
-        <button class="btn-dashboard" id="toggleDashboard">📊 ダッシュボード</button>
+        <button class="btn-dashboard" id="toggleDashboard"><img src="images/icons/chart.svg" alt="" class="ui-icon" style="width:16px;height:16px;"> ダッシュボード</button>
         <span class="btn-youtube coming-soon" id="youtubeLink">▶ <span class="yt-btn-full">YouTube討論チャンネル（準備中）</span><span class="yt-btn-short">YouTube（準備中）</span></span>
       </div>
       <div class="header-legal">
@@ -59,9 +59,9 @@
       <div class="map-controls">
         <div class="search-box">
           <input type="text" id="searchInput" placeholder="場所・店舗を検索（例：米子駅、皆生温泉）" maxlength="100">
-          <button id="searchBtn" class="search-btn">🔍</button>
+          <button id="searchBtn" class="search-btn"><img src="images/icons/search.svg" alt="" class="ui-icon" style="width:16px;height:16px;"></button>
         </div>
-        <button id="locateBtn" class="locate-btn" title="現在地を表示">📍</button>
+        <button id="locateBtn" class="locate-btn" title="現在地を表示"><img src="images/icons/location.svg" alt="" class="ui-icon" style="width:18px;height:18px;"></button>
       </div>
       <div class="map-hint" id="mapHint">
         <img src="images/yonabou_speech_bubble.png" alt="よな坊" class="hint-mascot">
@@ -71,7 +71,7 @@
 
     <aside class="sidebar" id="sidebar">
       <div class="sidebar-tabs">
-        <button class="sidebar-tab active" data-tab="voices">📍 みんなの声</button>
+        <button class="sidebar-tab active" data-tab="voices"><img src="images/icons/location.svg" alt="" class="ui-icon" style="width:14px;height:14px;"> みんなの声</button>
         <button class="sidebar-tab" data-tab="youtube">▶ 討論テーマ</button>
       </div>
 
@@ -92,7 +92,7 @@
         <div class="sidebar-header">
           <h2>▶ YouTube討論テーマ</h2>
         </div>
-        <p class="youtube-panel-desc">みんなの声から生まれた討論テーマ案。<br>見たいテーマに👍、興味ないテーマに👎を！</p>
+        <p class="youtube-panel-desc">みんなの声から生まれた討論テーマ案。<br>見たいテーマに<img src="images/icons/thumbsup.svg" alt="" class="ui-icon" style="width:14px;height:14px;">、興味ないテーマに<img src="images/icons/thumbsdown.svg" alt="" class="ui-icon" style="width:14px;height:14px;">を！</p>
         <div class="youtube-topics-list" id="youtubeTopicsList"></div>
       </div>
     </aside>
@@ -101,7 +101,7 @@
   <div class="dashboard-overlay" id="dashboardOverlay">
     <div class="dashboard">
       <div class="dashboard-header">
-        <h2>📊 討論テーマ ダッシュボード</h2>
+        <h2><img src="images/icons/chart.svg" alt="" class="ui-icon" style="width:20px;height:20px;"> 討論テーマ ダッシュボード</h2>
         <p class="dashboard-subtitle">この声をYouTubeで討論しよう！</p>
         <button class="dashboard-close" id="closeDashboard">✕</button>
       </div>
@@ -111,7 +111,7 @@
 
       <div class="pending-reports-section" id="pendingReportsSection"></div>
 
-      <div class="dashboard-section-title">📋 投稿データ分析</div>
+      <div class="dashboard-section-title"><img src="images/icons/clipboard.svg" alt="" class="ui-icon" style="width:16px;height:16px;"> 投稿データ分析</div>
       <div class="dashboard-grid">
         <section class="dashboard-card">
           <h3>カテゴリ別 投稿数</h3>
@@ -119,31 +119,31 @@
         </section>
 
         <section class="dashboard-card">
-          <h3>✅ 改善達成状況</h3>
+          <h3><img src="images/icons/check.svg" alt="" class="ui-icon" style="width:16px;height:16px;"> 改善達成状況</h3>
           <p class="card-desc">市民の声がどれだけ改善されたか</p>
           <div id="resolvedChart"></div>
         </section>
 
         <section class="dashboard-card">
-          <h3>🔥 討論テーマ候補 TOP5</h3>
+          <h3><img src="images/icons/fire.svg" alt="" class="ui-icon" style="width:16px;height:16px;"> 討論テーマ候補 TOP5</h3>
           <p class="card-desc">賛同数が多い声をランキング</p>
           <ol id="topRanking" class="top-ranking"></ol>
         </section>
 
         <section class="dashboard-card">
-          <h3>🏆 改善された声 TOP3</h3>
+          <h3><img src="images/icons/trophy.svg" alt="" class="ui-icon" style="width:16px;height:16px;"> 改善された声 TOP3</h3>
           <p class="card-desc">実際に改善につながった声</p>
           <div id="resolvedRanking"></div>
         </section>
 
         <section class="dashboard-card wide">
-          <h3>📈 月別投稿数の推移</h3>
+          <h3><img src="images/icons/trending.svg" alt="" class="ui-icon" style="width:16px;height:16px;"> 月別投稿数の推移</h3>
           <p class="card-desc">いつ声が集まっているか</p>
           <div id="monthlyChart" class="monthly-chart"></div>
         </section>
 
         <section class="dashboard-card wide">
-          <h3>💬 今週のホットトピック</h3>
+          <h3><img src="images/icons/speech.svg" alt="" class="ui-icon" style="width:16px;height:16px;"> 今週のホットトピック</h3>
           <p class="card-desc">直近の注目エリア・テーマをピックアップ</p>
           <div id="hotTopics" class="hot-topics"></div>
         </section>
@@ -199,7 +199,7 @@
 
   <div class="post-form-overlay" id="postFormOverlay">
     <div class="post-form">
-      <h3>📝 この場所について声を投稿</h3>
+      <h3><img src="images/icons/note.svg" alt="" class="ui-icon" style="width:18px;height:18px;"> この場所について声を投稿</h3>
       <p class="form-location" id="formLocation"></p>
 
       <div class="form-group">
@@ -218,9 +218,9 @@
       </div>
 
       <div class="form-guideline">
-        <p>🌱 <strong>投稿ガイドライン</strong></p>
+        <p><img src="images/icons/seedling.svg" alt="" class="ui-icon" style="width:15px;height:15px;"> <strong>投稿ガイドライン</strong></p>
         <p>このサイトは米子市をより良くするための前向きな声を集める場です。個人への批判・悪口・誹謗中傷は自動で検出され投稿できません。</p>
-        <p>⭕「〇〇を改善してほしい」「〇〇があるといいな」</p>
+        <p><img src="images/icons/circle-ok.svg" alt="" class="ui-icon" style="width:14px;height:14px;">「〇〇を改善してほしい」「〇〇があるといいな」</p>
       </div>
 
       <div class="form-terms-agree">
@@ -239,7 +239,7 @@
 
   <div class="post-form-overlay" id="resolveFormOverlay">
     <div class="post-form resolve-form">
-      <h3>🎉 改善報告を送る</h3>
+      <h3><img src="images/icons/celebrate.svg" alt="" class="ui-icon" style="width:18px;height:18px;"> 改善報告を送る</h3>
       <p class="resolve-target" id="resolveTarget"></p>
       <p class="resolve-desc">この声に対して改善・変化があった場合、みんなに報告しよう！<br>管理者が確認後、サイトに反映されます。</p>
 
@@ -255,7 +255,7 @@
 
       <div class="form-actions">
         <button class="btn-cancel" id="cancelResolve">キャンセル</button>
-        <button class="btn-submit btn-resolve-submit" id="submitResolve">📩 報告を送る</button>
+        <button class="btn-submit btn-resolve-submit" id="submitResolve"><img src="images/icons/send.svg" alt="" class="ui-icon ui-icon-white" style="width:14px;height:14px;"> 報告を送る</button>
       </div>
     </div>
   </div>
@@ -272,8 +272,8 @@
 
       <div class="form-actions">
         <button class="btn-cancel" id="cancelApprove">キャンセル</button>
-        <button class="btn-submit btn-reject-submit" id="rejectReport">❌ 却下</button>
-        <button class="btn-submit btn-approve-submit" id="approveReport">✅ 承認する</button>
+        <button class="btn-submit btn-reject-submit" id="rejectReport"><img src="images/icons/reject.svg" alt="" class="ui-icon ui-icon-white" style="width:14px;height:14px;"> 却下</button>
+        <button class="btn-submit btn-approve-submit" id="approveReport"><img src="images/icons/check.svg" alt="" class="ui-icon ui-icon-white" style="width:14px;height:14px;"> 承認する</button>
       </div>
     </div>
   </div>
@@ -417,6 +417,6 @@
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha384-cxOPjt7s7Iz04uaHJceBmS+qpjv2JkIHNVcuOrM+YHwZOmJGBXI00mdUXEq65HTH" crossorigin="anonymous"></script>
   <script src="js/yonago-boundary.js"></script>
-  <script src="js/app.js?v=20260511b"></script>
+  <script src="js/app.js?v=20260511c"></script>
 </body>
 </html>

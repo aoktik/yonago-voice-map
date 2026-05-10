@@ -49,6 +49,40 @@ function catIconCircle(cat, size) {
     '</span>';
 }
 
+// UIアイコンパス
+var UI_ICONS = {
+  location:    'images/icons/location.svg',
+  thumbsup:    'images/icons/thumbsup.svg',
+  thumbsdown:  'images/icons/thumbsdown.svg',
+  note:        'images/icons/note.svg',
+  celebrate:   'images/icons/celebrate.svg',
+  pushpin:     'images/icons/pushpin.svg',
+  send:        'images/icons/send.svg',
+  chart:       'images/icons/chart.svg',
+  seedling:    'images/icons/seedling.svg',
+  check:       'images/icons/check.svg',
+  reject:      'images/icons/reject.svg',
+  warning:     'images/icons/warning.svg',
+  search:      'images/icons/search.svg',
+  fire:        'images/icons/fire.svg',
+  trophy:      'images/icons/trophy.svg',
+  trending:    'images/icons/trending.svg',
+  speech:      'images/icons/speech.svg',
+  clipboard:   'images/icons/clipboard.svg',
+  circleOk:    'images/icons/circle-ok.svg',
+  map:         'images/icons/map-icon.svg',
+};
+
+// UIアイコンHTML生成（インライン用、カラーアイコン）
+function uiIcon(name, size) {
+  return '<img src="' + UI_ICONS[name] + '" alt="" class="ui-icon" style="width:' + size + 'px;height:' + size + 'px;">';
+}
+
+// 白色UIアイコン（色付き背景上で使用）
+function uiIconWhite(name, size) {
+  return '<img src="' + UI_ICONS[name] + '" alt="" class="ui-icon ui-icon-white" style="width:' + size + 'px;height:' + size + 'px;">';
+}
+
 var VALID_CATEGORY_IDS = CATEGORIES.map(function(c) { return c.id; });
 
 var NG_WORDS = [
@@ -459,17 +493,17 @@ async function doSearch() {
     searchMarker = L.marker([place.lat, place.lng], {
       icon: L.divIcon({
         className: 'custom-marker',
-        html: '<div style="background:#2563eb;width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;box-shadow:0 2px 8px rgba(0,0,0,0.3);border:3px solid white;">🔍</div>',
+        html: '<div style="background:#2563eb;width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,0.3);border:3px solid white;">' + uiIconWhite('search', 20) + '</div>',
         iconSize: [36, 36],
         iconAnchor: [18, 36],
         popupAnchor: [0, -38],
       })
     }).addTo(map);
-    searchMarker.bindPopup('<div class="search-result-popup">🔍 ' + escapeHtml(place.name) + '</div>').openPopup();
+    searchMarker.bindPopup('<div class="search-result-popup">' + uiIcon('search', 14) + ' ' + escapeHtml(place.name) + '</div>').openPopup();
     map.setView([place.lat, place.lng], 16);
     gtag('event', 'search', { search_term: query, source: 'local' });
     btn.disabled = false;
-    btn.textContent = '🔍';
+    btn.innerHTML = uiIcon('search', 16);
     return;
   }
 
@@ -493,13 +527,13 @@ async function doSearch() {
       searchMarker = L.marker([lat, lng], {
         icon: L.divIcon({
           className: 'custom-marker',
-          html: '<div style="background:#2563eb;width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;box-shadow:0 2px 8px rgba(0,0,0,0.3);border:3px solid white;">🔍</div>',
+          html: '<div style="background:#2563eb;width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,0.3);border:3px solid white;">' + uiIconWhite('search', 20) + '</div>',
           iconSize: [36, 36],
           iconAnchor: [18, 36],
           popupAnchor: [0, -38],
         })
       }).addTo(map);
-      searchMarker.bindPopup('<div class="search-result-popup">🔍 ' + escapeHtml(name) + '</div>').openPopup();
+      searchMarker.bindPopup('<div class="search-result-popup">' + uiIcon('search', 14) + ' ' + escapeHtml(name) + '</div>').openPopup();
       map.setView([lat, lng], 16);
       gtag('event', 'search', { search_term: query, source: 'nominatim' });
     } else {
@@ -510,7 +544,7 @@ async function doSearch() {
     alert('検索に失敗しました。もう一度お試しください。');
   } finally {
     btn.disabled = false;
-    btn.textContent = '🔍';
+    btn.innerHTML = uiIcon('search', 16);
   }
 }
 
@@ -538,7 +572,7 @@ function initLocate() {
         // 米子市外の場合はマップを移動せずトーストを表示
         if (!isInYonago({ lat: lat, lng: lng })) {
           btn.classList.remove('locating');
-          btn.textContent = '📍';
+          btn.innerHTML = uiIcon('location', 18);
           showOutOfAreaToast();
           gtag('event', 'locate_outside');
           return;
@@ -567,11 +601,11 @@ function initLocate() {
         map.setView([lat, lng], 16);
         gtag('event', 'locate');
         btn.classList.remove('locating');
-        btn.textContent = '📍';
+        btn.innerHTML = uiIcon('location', 18);
       },
       function(err) {
         btn.classList.remove('locating');
-        btn.textContent = '📍';
+        btn.innerHTML = uiIcon('location', 18);
         if (err.code === 1) {
           alert('位置情報の使用が許可されていません。\nブラウザの設定から許可してください。');
         } else {
@@ -620,9 +654,9 @@ function renderFilterButtons() {
 
 function openPostForm(latlng) {
   var locationEl = document.getElementById('formLocation');
-  locationEl.textContent = '📍 場所を取得中...';
+  locationEl.innerHTML = uiIcon('location', 14) + ' 場所を取得中...';
   reverseGeocode(latlng.lat, latlng.lng, function(address) {
-    locationEl.textContent = '📍 ' + address;
+    locationEl.innerHTML = uiIcon('location', 14) + ' ' + escapeHtml(address);
   });
   document.getElementById('nickname').value = '';
   document.getElementById('message').value = '';
@@ -677,7 +711,7 @@ function openResolveForm(postId) {
   var post = posts.find(function(p) { return p.id === postId; });
   if (!post) return;
   pendingResolvePostId = postId;
-  document.getElementById('resolveTarget').textContent = '📍 「' + post.message.slice(0, 40) + (post.message.length > 40 ? '...' : '') + '」';
+  document.getElementById('resolveTarget').innerHTML = uiIcon('location', 14) + ' 「' + escapeHtml(post.message.slice(0, 40)) + (post.message.length > 40 ? '...' : '') + '」';
   document.getElementById('resolveNickname').value = '';
   document.getElementById('resolveMessage').value = '';
   document.getElementById('resolveCharCount').textContent = '0/200';
@@ -724,7 +758,7 @@ async function submitResolve() {
     alert('送信に失敗しました。もう一度お試しください。');
   } finally {
     submitBtn.disabled = false;
-    submitBtn.textContent = '📩 報告を送る';
+    submitBtn.innerHTML = uiIcon('send', 14) + ' 報告を送る';
   }
 }
 
@@ -833,8 +867,8 @@ function renderPendingReports() {
           '<span class="pending-report-meta">報告者: ' + escapeHtml(report.nickname) + ' | ' + formatDate(report.created_at) + '</span>' +
         '</div>' +
         '<div class="pending-report-actions">' +
-          '<button class="btn-pending-approve" data-report-id="' + escapeHtml(report.id) + '">✅ 承認</button>' +
-          '<button class="btn-pending-reject" data-report-id="' + escapeHtml(report.id) + '">❌ 却下</button>' +
+          '<button class="btn-pending-approve" data-report-id="' + escapeHtml(report.id) + '">' + uiIcon('check', 14) + ' 承認</button>' +
+          '<button class="btn-pending-reject" data-report-id="' + escapeHtml(report.id) + '">' + uiIcon('reject', 14) + ' 却下</button>' +
         '</div>' +
       '</div>';
   });
@@ -883,7 +917,7 @@ function showModerationAlert(message) {
     overlay.className = 'moderation-overlay';
     overlay.innerHTML =
       '<div class="moderation-dialog">' +
-        '<div class="moderation-icon">🌱</div>' +
+        '<div class="moderation-icon">' + uiIcon('seedling', 32) + '</div>' +
         '<h3 class="moderation-title">前向きな声をお願いします</h3>' +
         '<p class="moderation-message" id="moderationMessage"></p>' +
         '<button class="moderation-btn" id="moderationClose">書き直す</button>' +
@@ -991,7 +1025,7 @@ function isSamplePost(p) {
 }
 
 function createMarkerIcon(cat, resolved) {
-  var resolvedBadge = resolved ? '<div style="position:absolute;top:-4px;right:-4px;font-size:11px;background:white;border-radius:50%;width:16px;height:16px;display:flex;align-items:center;justify-content:center;box-shadow:0 1px 3px rgba(0,0,0,0.3);">✅</div>' : '';
+  var resolvedBadge = resolved ? '<div style="position:absolute;top:-4px;right:-4px;background:white;border-radius:50%;width:16px;height:16px;display:flex;align-items:center;justify-content:center;box-shadow:0 1px 3px rgba(0,0,0,0.3);">' + uiIcon('check', 14) + '</div>' : '';
   return L.divIcon({
     className: 'custom-marker',
     html: '<div style="position:relative;"><div style="background:' + cat.color + ';width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,0.3);border:2px solid white;">' + catIconHtml(cat, 18) + '</div>' + resolvedBadge + '</div>',
@@ -1014,17 +1048,17 @@ function renderMarkers() {
     var marker = L.marker([post.lat, post.lng], { icon: createMarkerIcon(cat, post.resolved) }).addTo(map);
 
     var isPopupSample = isSamplePost(post);
-    var popupSampleNote = isPopupSample ? '<div class="popup-sample-note">📌 これは投稿の一例です</div>' : '';
+    var popupSampleNote = isPopupSample ? '<div class="popup-sample-note">' + uiIcon('pushpin', 13) + ' これは投稿の一例です</div>' : '';
     var popupResolved = '';
     if (post.resolved && post.resolvedMessage) {
       popupResolved = '<div class="popup-resolved">' +
-        '<div class="popup-resolved-label">✅ 改善されました</div>' +
+        '<div class="popup-resolved-label">' + uiIcon('check', 14) + ' 改善されました</div>' +
         '<div class="popup-resolved-msg">' + escapeHtml(post.resolvedMessage) + '</div>' +
         '</div>';
     }
     var popupResolveBtn = '';
     if (!post.resolved) {
-      popupResolveBtn = '<button class="popup-resolve-btn" data-post-id="' + escapeHtml(post.id) + '">🎉 改善報告</button>';
+      popupResolveBtn = '<button class="popup-resolve-btn" data-post-id="' + escapeHtml(post.id) + '">' + uiIcon('celebrate', 14) + ' 改善報告</button>';
     }
     var popupHtml = '<div class="popup-content">' +
       popupSampleNote +
@@ -1033,9 +1067,9 @@ function renderMarkers() {
       popupResolved +
       '<span class="popup-nickname">' + escapeHtml(post.nickname) + '</span>' +
       '<br><button class="popup-agree-btn" data-post-id="' + escapeHtml(post.id) + '">' +
-      '👍 賛同 <span class="popup-agree-count">' + post.agrees + '</span></button>' +
+      uiIcon('thumbsup', 14) + ' 賛同 <span class="popup-agree-count">' + post.agrees + '</span></button>' +
       popupResolveBtn +
-      '<button class="popup-report-btn" data-post-id="' + escapeHtml(post.id) + '">⚠ 通報</button>' +
+      '<button class="popup-report-btn" data-post-id="' + escapeHtml(post.id) + '">' + uiIcon('warning', 14) + ' 通報</button>' +
       '</div>';
 
     marker.bindPopup(popupHtml);
@@ -1076,18 +1110,18 @@ function renderPosts() {
     var item = document.createElement('div');
     item.className = 'post-item';
     var isSample = isSamplePost(post);
-    var sampleBadge = isSample ? '<span class="sample-badge">📌 投稿例</span>' : '';
-    var resolvedBadge = post.resolved ? '<span class="resolved-badge">✅ 改善済み</span>' : '';
+    var sampleBadge = isSample ? '<span class="sample-badge">' + uiIcon('pushpin', 12) + ' 投稿例</span>' : '';
+    var resolvedBadge = post.resolved ? '<span class="resolved-badge">' + uiIcon('check', 12) + ' 改善済み</span>' : '';
     var resolvedSection = '';
     if (post.resolved && post.resolvedMessage) {
       resolvedSection =
         '<div class="resolved-section">' +
-          '<div class="resolved-label">✅ 改善されました</div>' +
+          '<div class="resolved-label">' + uiIcon('check', 14) + ' 改善されました</div>' +
           '<div class="resolved-message">' + escapeHtml(post.resolvedMessage) + '</div>' +
         '</div>';
     }
     var resolveButton = !post.resolved ?
-      '<button class="btn-resolve" data-id="' + post.id + '">🎉 改善報告</button>' : '';
+      '<button class="btn-resolve" data-id="' + post.id + '">' + uiIcon('celebrate', 14) + ' 改善報告</button>' : '';
     item.innerHTML =
       '<div class="post-item-header">' +
         '<span class="post-category-badge" style="background:' + cat.color + '">' + catIconHtml(cat, 12) + ' ' + cat.name + '</span>' +
@@ -1100,10 +1134,10 @@ function renderPosts() {
       '<div class="post-footer">' +
         '<span class="post-date">' + formatDate(post.createdAt) + '</span>' +
         '<div class="post-agree">' +
-          '<button class="btn-report-post" data-id="' + post.id + '" title="通報">⚠</button>' +
+          '<button class="btn-report-post" data-id="' + post.id + '" title="通報">' + uiIcon('warning', 13) + '</button>' +
           resolveButton +
           '<button class="btn-agree ' + (agreedSet.has(post.id) ? 'agreed' : '') + '" data-id="' + post.id + '">' +
-            '👍 <span class="agree-count">' + post.agrees + '</span>' +
+            uiIcon('thumbsup', 14) + ' <span class="agree-count">' + post.agrees + '</span>' +
           '</button>' +
         '</div>' +
       '</div>';
@@ -1244,7 +1278,7 @@ function renderTopRanking() {
       '<div class="rank-content">' +
         '<span class="rank-message">' + escapeHtml(post.message) + '</span>' +
         '<span class="rank-meta">' + (cat ? catIconCircle(cat, 11) + ' ' + cat.name : '') +
-          ' | 👍 ' + post.agrees + ' | ' + escapeHtml(post.nickname) + '</span>' +
+          ' | ' + uiIcon('thumbsup', 12) + ' ' + post.agrees + ' | ' + escapeHtml(post.nickname) + '</span>' +
       '</div>';
     container.appendChild(li);
   });
@@ -1290,7 +1324,7 @@ function renderHotTopics() {
     card.innerHTML =
       '<div class="hot-topic-area">' + (cat ? catIconCircle(cat, 12) : '') + ' ' + (topCat ? topCat[0] : '') + '</div>' +
       '<div class="hot-topic-summary">' + escapeHtml(topPost.message) + '</div>' +
-      '<div class="hot-topic-count">' + area.posts.length + '件の声 | 👍 ' + area.totalAgrees + '</div>';
+      '<div class="hot-topic-count">' + area.posts.length + '件の声 | ' + uiIcon('thumbsup', 12) + ' ' + area.totalAgrees + '</div>';
     container.appendChild(card);
   });
 }
@@ -1405,9 +1439,9 @@ function renderResolvedRanking() {
       '</div>' +
       '<div class="resolved-rank-result">' +
         '<span class="resolved-rank-arrow">→</span>' +
-        '<p>✅ ' + escapeHtml(post.resolvedMessage) + '</p>' +
+        '<p>' + uiIcon('check', 14) + ' ' + escapeHtml(post.resolvedMessage) + '</p>' +
       '</div>' +
-      '<div class="resolved-rank-meta">👍 ' + post.agrees + ' 賛同</div>';
+      '<div class="resolved-rank-meta">' + uiIcon('thumbsup', 13) + ' ' + post.agrees + ' 賛同</div>';
     container.appendChild(card);
   });
 }
@@ -1503,7 +1537,7 @@ function renderMedicalChart() {
       '</div>';
   });
   html += '</div>' +
-    '<p class="data-note">⚠️ 弓ヶ浜エリアは内科クリニックが特に不足</p>' +
+    '<p class="data-note">' + uiIcon('warning', 14) + ' 弓ヶ浜エリアは内科クリニックが特に不足</p>' +
     '<p class="data-source">参考値・概算データ</p>';
   container.innerHTML = html;
 }
@@ -1516,12 +1550,12 @@ function renderTransportData() {
       '<div class="transport-item">' +
         '<div class="transport-name">🚌 だんだんバス</div>' +
         '<div class="transport-detail">循環バス / 約60分間隔</div>' +
-        '<div class="transport-issue">⚠️ 本数が少なく通勤利用が困難</div>' +
+        '<div class="transport-issue">' + uiIcon('warning', 13) + ' 本数が少なく通勤利用が困難</div>' +
       '</div>' +
       '<div class="transport-item">' +
         '<div class="transport-name">🚌 日交路線バス</div>' +
         '<div class="transport-detail">米子駅〜皆生・境港など</div>' +
-        '<div class="transport-issue">⚠️ 郊外路線は減便傾向</div>' +
+        '<div class="transport-issue">' + uiIcon('warning', 13) + ' 郊外路線は減便傾向</div>' +
       '</div>' +
       '<div class="transport-item">' +
         '<div class="transport-name">🚃 JR境線</div>' +
@@ -1748,14 +1782,14 @@ function renderYoutubeTopics() {
             '</div>' +
             '<div class="yt-vote-actions">' +
               '<button class="yt-vote-btn yt-like' + (userVote === 'like' ? ' voted' : '') + '" data-topic="' + topic.id + '" data-vote="like">' +
-                '👍 見たい <span>' + topic.likes + '</span>' +
+                uiIcon('thumbsup', 14) + ' 見たい <span>' + topic.likes + '</span>' +
               '</button>' +
               '<button class="yt-vote-btn yt-dislike' + (userVote === 'dislike' ? ' voted' : '') + '" data-topic="' + topic.id + '" data-vote="dislike">' +
-                '👎 <span>' + topic.dislikes + '</span>' +
+                uiIcon('thumbsdown', 14) + ' <span>' + topic.dislikes + '</span>' +
               '</button>' +
             '</div>' +
           '</div>' +
-          '<button class="yt-detail-btn" data-topic="' + topic.id + '">📝 詳しく</button>' +
+          '<button class="yt-detail-btn" data-topic="' + topic.id + '">' + uiIcon('note', 14) + ' 詳しく</button>' +
         '</div>' +
       '</div>';
 
@@ -1794,12 +1828,12 @@ function openTopicDetail(topicId) {
   if (design.noteUrl) {
     noteLink =
       '<a href="' + design.noteUrl + '" target="_blank" rel="noopener noreferrer" class="topic-detail-note-link">' +
-        '📝 noteで詳しく読む' +
+        uiIcon('note', 15) + ' noteで詳しく読む' +
       '</a>';
   } else {
     noteLink =
       '<span class="topic-detail-note-link note-coming-soon">' +
-        '📝 note記事 準備中' +
+        uiIcon('note', 15) + ' note記事 準備中' +
       '</span>';
   }
 
@@ -1826,10 +1860,10 @@ function openTopicDetail(topicId) {
         '</div>' +
         '<div class="yt-vote-actions">' +
           '<button class="yt-vote-btn yt-like' + (userVote === 'like' ? ' voted' : '') + '" data-topic="' + topicId + '" data-vote="like">' +
-            '👍 見たい <span>' + topic.likes + '</span>' +
+            uiIcon('thumbsup', 14) + ' 見たい <span>' + topic.likes + '</span>' +
           '</button>' +
           '<button class="yt-vote-btn yt-dislike' + (userVote === 'dislike' ? ' voted' : '') + '" data-topic="' + topicId + '" data-vote="dislike">' +
-            '👎 <span>' + topic.dislikes + '</span>' +
+            uiIcon('thumbsdown', 14) + ' <span>' + topic.dislikes + '</span>' +
           '</button>' +
         '</div>' +
       '</div>' +
@@ -1972,7 +2006,7 @@ async function submitReportForm() {
 function showOutOfAreaToast() {
   var toast = document.createElement('div');
   toast.className = 'out-of-area-toast';
-  toast.textContent = '現在地は米子市外のようです。マップから米子市の声をご覧ください 🗺️';
+  toast.innerHTML = '現在地は米子市外のようです。マップから米子市の声をご覧ください ' + uiIconWhite('map', 16);
   document.body.appendChild(toast);
   requestAnimationFrame(function() {
     toast.classList.add('show');

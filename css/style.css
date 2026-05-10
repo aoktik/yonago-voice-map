@@ -622,6 +622,17 @@ body {
   vertical-align: -4px;
 }
 
+/* UIアイコン共通 */
+.ui-icon {
+  display: inline-block;
+  vertical-align: -3px;
+  object-fit: contain;
+}
+
+.ui-icon-white {
+  filter: brightness(0) invert(1);
+}
+
 .form-group input,
 .form-group textarea {
   width: 100%;
