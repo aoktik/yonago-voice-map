@@ -1070,7 +1070,7 @@ function normalizePost(row) {
     nickname: row.nickname,
     message: row.message,
     agrees: row.agrees,
-    isSample: row.is_sample,
+    isSample: false,
     resolved: row.resolved || false,
     resolvedMessage: row.resolved_message || null,
     createdAt: row.created_at,
@@ -1078,7 +1078,7 @@ function normalizePost(row) {
 }
 
 function isSamplePost(p) {
-  return p.isSample || (p.id && p.id.indexOf('sample_') === 0);
+  return false;
 }
 
 function createMarkerIcon(cat, resolved) {
