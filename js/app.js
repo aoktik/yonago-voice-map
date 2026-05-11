@@ -338,6 +338,43 @@ function initUI() {
     if (e.target === this) closeDisasterModal();
   });
 
+  // YouTube準備中モーダル
+  document.getElementById('openYoutubeModal').addEventListener('click', function(e) {
+    e.preventDefault();
+    openYoutubeModal();
+  });
+  document.getElementById('openYoutubeModalLg').addEventListener('click', function(e) {
+    e.preventDefault();
+    openYoutubeModal();
+  });
+  document.getElementById('closeYoutubeModal').addEventListener('click', closeYoutubeModal);
+  document.getElementById('youtubeModalOverlay').addEventListener('click', function(e) {
+    if (e.target === this) closeYoutubeModal();
+  });
+  document.getElementById('ytModalScrollToVote').addEventListener('click', function() {
+    closeYoutubeModal();
+    // ダッシュボードが開いていたら閉じる
+    var dashboard = document.getElementById('dashboard');
+    if (dashboard && dashboard.classList.contains('active')) {
+      dashboard.classList.remove('active');
+    }
+    // 討論テーマタブに切り替え
+    var tabs = document.querySelectorAll('.sidebar-tab');
+    tabs.forEach(function(t) { t.classList.remove('active'); });
+    var ytTab = document.querySelector('.sidebar-tab[data-tab="youtube"]');
+    if (ytTab) ytTab.classList.add('active');
+    document.querySelectorAll('.sidebar-panel').forEach(function(p) { p.classList.remove('active'); });
+    var ytPanel = document.getElementById('youtubePanel');
+    if (ytPanel) ytPanel.classList.add('active');
+    // スクロール
+    setTimeout(function() {
+      var voteSection = document.getElementById('youtubeTopicsList');
+      if (voteSection) {
+        voteSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }, 100);
+  });
+
   // Cookie consent events
   var cookieAcceptBtn = document.getElementById('cookieAccept');
   var cookieDeclineBtn = document.getElementById('cookieDecline');
@@ -2022,6 +2059,17 @@ function openDisasterModal() {
 
 function closeDisasterModal() {
   document.getElementById('disasterOverlay').classList.remove('active');
+  document.body.style.overflow = '';
+}
+
+// === YouTube準備中モーダル ===
+function openYoutubeModal() {
+  document.getElementById('youtubeModalOverlay').classList.add('active');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeYoutubeModal() {
+  document.getElementById('youtubeModalOverlay').classList.remove('active');
   document.body.style.overflow = '';
 }
 

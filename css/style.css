@@ -118,6 +118,7 @@ body {
 .sns-icon-note { color: #41C9B4; }
 .sns-icon-ig { color: #E4405F; }
 .sns-icon-threads { color: #000000; }
+.sns-icon-yt { color: #FF0000; cursor: pointer; }
 
 .dashboard-sns {
   display: flex;
@@ -144,6 +145,7 @@ body {
 .sns-lg-note { background: #41C9B4; }
 .sns-lg-ig { background: #E4405F; }
 .sns-lg-threads { background: #000000; }
+.sns-lg-yt { background: #FF0000; cursor: pointer; }
 
 .header-right {
   display: flex;
@@ -168,33 +170,126 @@ body {
   background: #1d4ed8;
 }
 
-.btn-youtube {
-  background: #ff0000;
-  color: white;
-  text-decoration: none;
-  padding: 8px 16px;
-  border-radius: 8px;
-  font-size: 0.85rem;
-  font-weight: 600;
-  transition: background 0.2s;
-}
-
-.btn-youtube:hover {
-  background: #cc0000;
-}
-
-.btn-youtube.coming-soon {
-  background: #999;
-  cursor: default;
-  opacity: 0.8;
-}
-
-.btn-youtube.coming-soon:hover {
-  background: #999;
-}
-
-.yt-btn-short {
+/* YouTube準備中モーダル */
+.yt-modal-overlay {
   display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 10000;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+}
+.yt-modal-overlay.active {
+  display: flex;
+}
+.yt-modal {
+  background: white;
+  border-radius: 16px;
+  max-width: 400px;
+  width: 100%;
+  padding: 32px 28px;
+  text-align: center;
+  position: relative;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+  animation: ytModalIn 0.25s ease-out;
+}
+@keyframes ytModalIn {
+  from { opacity: 0; transform: scale(0.92) translateY(12px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+.yt-modal-close {
+  position: absolute;
+  top: 12px;
+  right: 14px;
+  background: none;
+  border: none;
+  font-size: 1.3rem;
+  color: #999;
+  cursor: pointer;
+  line-height: 1;
+  padding: 4px;
+}
+.yt-modal-close:hover {
+  color: #333;
+}
+.yt-modal-icon {
+  margin-bottom: 12px;
+}
+.yt-modal-title {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin: 0 0 8px;
+}
+.yt-modal-badge {
+  display: inline-block;
+  background: #fef3c7;
+  color: #b45309;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 3px 12px;
+  border-radius: 20px;
+  margin-bottom: 14px;
+  letter-spacing: 0.05em;
+}
+.yt-modal-desc {
+  font-size: 0.9rem;
+  color: #555;
+  line-height: 1.6;
+  margin: 0 0 20px;
+}
+.yt-modal-card {
+  display: flex;
+  gap: 12px;
+  background: #fefce8;
+  border: 1px solid #fde68a;
+  border-radius: 12px;
+  padding: 14px;
+  text-align: left;
+  margin-bottom: 20px;
+}
+.yt-modal-card-icon {
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+.yt-modal-card-title {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #92400e;
+  margin-bottom: 4px;
+}
+.yt-modal-card-text {
+  font-size: 0.8rem;
+  color: #78350f;
+  line-height: 1.5;
+}
+.yt-modal-vote-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #2563eb;
+  color: white;
+  border: none;
+  padding: 10px 24px;
+  border-radius: 10px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+  margin-bottom: 14px;
+}
+.yt-modal-vote-btn:hover {
+  background: #1d4ed8;
+}
+.yt-modal-vote-btn img {
+  filter: brightness(0) invert(1);
+}
+.yt-modal-footer-text {
+  font-size: 0.75rem;
+  color: #999;
+  margin: 0;
 }
 
 .main-content {
@@ -2169,16 +2264,13 @@ body {
     width: 100%;
   }
 
-  .btn-dashboard, .btn-youtube {
+  .btn-dashboard {
     flex: 1;
     text-align: center;
     white-space: nowrap;
     font-size: 0.8rem;
     padding: 8px 10px;
   }
-
-  .yt-btn-full { display: none; }
-  .yt-btn-short { display: inline; }
 
   .main-content {
     flex-direction: column;
