@@ -26,7 +26,7 @@
   <!-- Google Analytics (初期化はapp.jsで実行 - CSP対応) -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-759KNPK2B6"></script>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha384-sHL9NAb7lN7rfvG5lfHpm643Xkcjzp4jFvuavGOndn6pjVqS6ny56CAt3nsEVT4H" crossorigin="anonymous" />
-  <link rel="stylesheet" href="css/style.css?v=20260511f">
+  <link rel="stylesheet" href="css/style.css?v=20260511g">
 </head>
 <body>
   <header class="header">
@@ -346,6 +346,25 @@
     </div>
   </div>
 
+  <!-- 投稿ありがとうモーダル（投票誘導） -->
+  <div class="post-thanks-overlay" id="postThanksOverlay">
+    <div class="post-thanks-modal">
+      <button class="post-thanks-close" id="closePostThanks">✕</button>
+      <div class="post-thanks-hero">
+        <img src="images/yonabou_thank_you.png" alt="よな坊" class="post-thanks-mascot">
+      </div>
+      <h2 class="post-thanks-title">声を届けてくれてありがとう！</h2>
+      <p class="post-thanks-desc">あなたの声が米子をもっと良くするきっかけになります。</p>
+      <div class="post-thanks-divider"></div>
+      <p class="post-thanks-cta">YouTubeで取り上げる<strong>討論テーマ</strong>も投票で決まります。<br>気になるテーマに投票してみませんか？</p>
+      <div id="postThanksTopicCard"></div>
+      <button class="post-thanks-vote-btn" id="postThanksGoToTopics">
+        <img src="images/icons/like.svg" alt="" style="width:16px;height:16px;"> 討論テーマを見る
+      </button>
+      <button class="post-thanks-skip" id="postThanksSkip">あとで見る</button>
+    </div>
+  </div>
+
   <!-- よな坊プロフィール -->
   <div class="post-form-overlay" id="yonaboProfileOverlay">
     <div class="yonabo-profile">
@@ -478,6 +497,6 @@
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha384-cxOPjt7s7Iz04uaHJceBmS+qpjv2JkIHNVcuOrM+YHwZOmJGBXI00mdUXEq65HTH" crossorigin="anonymous"></script>
   <script src="js/yonago-boundary.js"></script>
-  <script src="js/app.js?v=20260511f"></script>
+  <script src="js/app.js?v=20260511g"></script>
 </body>
 </html>

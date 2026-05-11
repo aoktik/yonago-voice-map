@@ -403,6 +403,14 @@ function initUI() {
     document.getElementById('reportCharCount').textContent = this.value.length + '/200';
   });
 
+  // Post thanks modal events
+  document.getElementById('closePostThanks').addEventListener('click', closePostThanksModal);
+  document.getElementById('postThanksSkip').addEventListener('click', closePostThanksModal);
+  document.getElementById('postThanksGoToTopics').addEventListener('click', postThanksGoToTopics);
+  document.getElementById('postThanksOverlay').addEventListener('click', function(e) {
+    if (e.target === this) closePostThanksModal();
+  });
+
   var msgInput = document.getElementById('message');
   msgInput.addEventListener('input', function() {
     document.getElementById('charCount').textContent = this.value.length + '/200';
@@ -1037,7 +1045,7 @@ async function submitPost() {
     renderPosts();
     renderMarkers();
     document.getElementById('mapHint').style.display = 'none';
-    showYonaboThanks();
+    showPostThanksModal();
     gtag('event', 'post_submit', { category: selectedCategory });
   } catch (e) {
     alert('投稿に失敗しました。もう一度お試しください。');
@@ -1168,7 +1176,8 @@ function renderPosts() {
   }
 
   container.innerHTML = '';
-  filtered.forEach(function(post) {
+  var promoInserted = false;
+  filtered.forEach(function(post, index) {
     var cat = CATEGORIES.find(function(c) { return c.id === post.category; });
     if (!cat) return;
 
@@ -1238,7 +1247,69 @@ function renderPosts() {
     }
 
     container.appendChild(item);
+
+    // 5件目の後にトピックプロモカードを挿入
+    if (index === 4 && !promoInserted && youtubeTopics.length > 0) {
+      promoInserted = true;
+      var promo = buildTopicPromoCard();
+      if (promo) container.appendChild(promo);
+    }
   });
+}
+
+function buildTopicPromoCard() {
+  // 最も投票数の多いテーマを選択
+  var topTopic = youtubeTopics.slice().sort(function(a, b) {
+    return (b.likes + b.dislikes) - (a.likes + a.dislikes);
+  })[0];
+  if (!topTopic) return null;
+
+  var design = TOPIC_DESIGNS[topTopic.id] || {};
+  var plainTitle = (design.titleHtml || topTopic.title || '').replace(/<[^>]+>/g, '');
+  var userVote = topicVotes[topTopic.id] || null;
+  var totalVotes = topTopic.likes + topTopic.dislikes;
+
+  var card = document.createElement('div');
+  card.className = 'topic-promo-card';
+  card.innerHTML =
+    '<div class="topic-promo-header">' +
+      '<div class="topic-promo-header-icon"><img src="images/icons/megaphone.svg" alt="" style="width:16px;height:16px;"></div>' +
+      '<span class="topic-promo-header-text">YouTube討論テーマ 投票受付中</span>' +
+    '</div>' +
+    '<div class="topic-promo-body">' +
+      (design.photo ?
+        '<div class="topic-promo-thumb">' +
+          '<img src="' + design.photo + '" alt="">' +
+          '<div class="topic-promo-thumb-overlay" style="background:' + (design.overlay || '') + '"></div>' +
+        '</div>' : '') +
+      '<div class="topic-promo-info">' +
+        '<div class="topic-promo-title">' + escapeHtml(plainTitle) + '</div>' +
+        '<div class="topic-promo-meta">' + totalVotes + '票 · ' + (design.hook || '') + '</div>' +
+      '</div>' +
+    '</div>' +
+    '<div class="topic-promo-actions">' +
+      '<button class="topic-promo-vote-btn' + (userVote === 'like' ? ' voted' : '') + '" data-topic="' + topTopic.id + '">' +
+        uiIcon('thumbsup', 14) + (userVote === 'like' ? ' 投票済み' : ' 見たい！') +
+      '</button>' +
+      '<button class="topic-promo-link" id="promoSeeAll">他のテーマも見る →</button>' +
+    '</div>';
+
+  var voteBtn = card.querySelector('.topic-promo-vote-btn');
+  voteBtn.addEventListener('click', function(e) {
+    e.stopPropagation();
+    voteTopic(topTopic.id, 'like');
+    // 投票後にカードを再描画
+    var newCard = buildTopicPromoCard();
+    if (newCard) card.replaceWith(newCard);
+  });
+
+  var seeAllBtn = card.querySelector('.topic-promo-link');
+  seeAllBtn.addEventListener('click', function(e) {
+    e.stopPropagation();
+    document.getElementById('youtubePanel').scrollIntoView({ behavior: 'smooth' });
+  });
+
+  return card;
 }
 
 async function toggleAgree(postId) {
@@ -2227,6 +2298,53 @@ function showYonaboThanks() {
     toast.classList.remove('show');
     setTimeout(function() { toast.remove(); }, 400);
   }, 3000);
+}
+
+// === 投稿後ありがとうモーダル（投票誘導） ===
+function showPostThanksModal() {
+  var overlay = document.getElementById('postThanksOverlay');
+  var cardContainer = document.getElementById('postThanksTopicCard');
+
+  // 人気テーマカードを表示
+  cardContainer.innerHTML = '';
+  if (youtubeTopics.length > 0) {
+    var topTopic = youtubeTopics.slice().sort(function(a, b) {
+      return (b.likes + b.dislikes) - (a.likes + a.dislikes);
+    })[0];
+    var design = TOPIC_DESIGNS[topTopic.id] || {};
+    var plainTitle = (design.titleHtml || topTopic.title || '').replace(/<[^>]+>/g, '');
+    var totalVotes = topTopic.likes + topTopic.dislikes;
+
+    cardContainer.innerHTML =
+      '<div class="post-thanks-topic">' +
+        (design.photo ?
+          '<div class="post-thanks-topic-thumb">' +
+            '<img src="' + design.photo + '" alt="">' +
+          '</div>' : '') +
+        '<div class="post-thanks-topic-info">' +
+          '<div class="post-thanks-topic-label">🔥 いま注目のテーマ</div>' +
+          '<div class="post-thanks-topic-name">' + escapeHtml(plainTitle) + '</div>' +
+          '<div class="post-thanks-topic-votes">' + totalVotes + '票の投票があります</div>' +
+        '</div>' +
+      '</div>';
+  }
+
+  overlay.classList.add('active');
+  document.body.style.overflow = 'hidden';
+  gtag('event', 'post_thanks_modal_show');
+}
+
+function closePostThanksModal() {
+  document.getElementById('postThanksOverlay').classList.remove('active');
+  document.body.style.overflow = '';
+}
+
+function postThanksGoToTopics() {
+  closePostThanksModal();
+  gtag('event', 'post_thanks_go_to_topics');
+  setTimeout(function() {
+    document.getElementById('youtubePanel').scrollIntoView({ behavior: 'smooth' });
+  }, 200);
 }
 
 document.addEventListener('DOMContentLoaded', init);
