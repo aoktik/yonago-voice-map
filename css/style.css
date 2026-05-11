@@ -3458,6 +3458,72 @@ body {
   text-decoration: underline;
 }
 
+/* ===== 関連テーマヒント ===== */
+.related-topic-hint {
+  margin: 8px 0 4px;
+  padding: 10px 12px;
+  background: linear-gradient(135deg, #fef3c7 0%, #fef9c3 100%);
+  border: 1px solid #fde68a;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.related-topic-hint:hover {
+  background: linear-gradient(135deg, #fde68a 0%, #fef3c7 100%);
+  border-color: #fbbf24;
+}
+.related-topic-hint.voted {
+  background: linear-gradient(135deg, #ecfdf5 0%, #f0fdf4 100%);
+  border-color: #a7f3d0;
+}
+.related-topic-thumb {
+  flex-shrink: 0;
+  width: 44px;
+  height: 30px;
+  border-radius: 6px;
+  overflow: hidden;
+}
+.related-topic-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.related-topic-info {
+  flex: 1;
+  min-width: 0;
+}
+.related-topic-label {
+  font-size: 0.65rem;
+  color: #92400e;
+  font-weight: 600;
+  margin-bottom: 1px;
+}
+.related-topic-hint.voted .related-topic-label {
+  color: #059669;
+}
+.related-topic-title {
+  font-size: 0.78rem;
+  color: #1e293b;
+  font-weight: 600;
+  line-height: 1.3;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.related-topic-action {
+  flex-shrink: 0;
+  font-size: 0.7rem;
+  color: #d97706;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.related-topic-hint.voted .related-topic-action {
+  color: #059669;
+}
+
 /* ===== SNSシェアボタン ===== */
 .btn-share-voice {
   display: inline-flex;

@@ -1214,6 +1214,7 @@ function renderPosts() {
         '<span class="post-nickname">' + escapeHtml(post.nickname) + '</span>' +
       '</div>' +
       '<p class="post-message">' + escapeHtml(post.message) + '</p>' +
+      buildRelatedTopicHint(post.category) +
       resolvedSection +
       '<div class="post-footer">' +
         '<span class="post-date">' + formatDate(post.createdAt) + '</span>' +
@@ -1228,7 +1229,7 @@ function renderPosts() {
       '</div>';
 
     item.addEventListener('click', function(e) {
-      if (e.target.closest('.btn-agree') || e.target.closest('.btn-resolve') || e.target.closest('.btn-report-post') || e.target.closest('.btn-share-voice')) return;
+      if (e.target.closest('.btn-agree') || e.target.closest('.btn-resolve') || e.target.closest('.btn-report-post') || e.target.closest('.btn-share-voice') || e.target.closest('.related-topic-hint')) return;
       if (markers[post.id]) {
         map.setView([post.lat, post.lng], 16);
         markers[post.id].openPopup();
@@ -1265,6 +1266,20 @@ function renderPosts() {
       });
     }
 
+    var relatedHint = item.querySelector('.related-topic-hint');
+    if (relatedHint) {
+      relatedHint.addEventListener('click', function(e) {
+        e.stopPropagation();
+        var tid = relatedHint.dataset.topicId;
+        if (tid) {
+          voteTopic(tid, 'like');
+          relatedHint.querySelector('.related-topic-action').textContent = '✓ 投票済み';
+          relatedHint.classList.add('voted');
+          gtag('event', 'related_topic_vote', { topic: tid });
+        }
+      });
+    }
+
     container.appendChild(item);
 
     // 5件目の後にトピックプロモカードを挿入
@@ -1274,6 +1289,29 @@ function renderPosts() {
       if (promo) container.appendChild(promo);
     }
   });
+}
+
+function buildRelatedTopicHint(postCategory) {
+  if (youtubeTopics.length === 0) return '';
+  // カテゴリが一致するテーマを検索
+  var matched = youtubeTopics.filter(function(t) { return t.category === postCategory; });
+  if (matched.length === 0) return '';
+  // 最も投票の多いものを選択
+  var topic = matched.sort(function(a, b) { return (b.likes + b.dislikes) - (a.likes + a.dislikes); })[0];
+  var design = TOPIC_DESIGNS[topic.id] || {};
+  var plainTitle = (design.titleHtml || topic.title || '').replace(/<[^>]+>/g, '');
+  var userVote = topicVotes[topic.id] || null;
+  var actionText = userVote === 'like' ? '✓ 投票済み' : '投票する →';
+  var votedClass = userVote === 'like' ? ' voted' : '';
+
+  return '<div class="related-topic-hint' + votedClass + '" data-topic-id="' + topic.id + '">' +
+    (design.photo ? '<div class="related-topic-thumb"><img src="' + design.photo + '" alt=""></div>' : '') +
+    '<div class="related-topic-info">' +
+      '<div class="related-topic-label">💡 あなたの声に関連するテーマ</div>' +
+      '<div class="related-topic-title">' + escapeHtml(plainTitle) + '</div>' +
+    '</div>' +
+    '<div class="related-topic-action">' + actionText + '</div>' +
+  '</div>';
 }
 
 function buildTopicPromoCard() {
