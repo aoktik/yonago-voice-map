@@ -1048,12 +1048,25 @@ async function submitPost() {
   }
 }
 
+// 旧カテゴリIDを現行IDに正規化
+var CATEGORY_ALIAS = {
+  infrastructure: 'infra',
+  education: 'child',
+  economy: 'shop',
+  welfare: 'medical',
+  environment: 'nature',
+  community: 'idea',
+};
+
 function normalizePost(row) {
+  var cat = row.category;
+  if (CATEGORY_ALIAS[cat]) cat = CATEGORY_ALIAS[cat];
+  if (VALID_CATEGORY_IDS.indexOf(cat) === -1) cat = 'idea';
   return {
     id: row.id,
     lat: row.lat,
     lng: row.lng,
-    category: row.category,
+    category: cat,
     nickname: row.nickname,
     message: row.message,
     agrees: row.agrees,
