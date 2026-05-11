@@ -1218,8 +1218,8 @@ function renderPosts() {
       '<div class="post-footer">' +
         '<span class="post-date">' + formatDate(post.createdAt) + '</span>' +
         '<div class="post-agree">' +
-          '<button class="btn-share-voice" data-id="' + post.id + '" title="シェア">' + uiIcon('shareVoice', 14) + ' シェア</button>' +
           '<button class="btn-report-post" data-id="' + post.id + '" title="通報">' + uiIcon('warning', 13) + '</button>' +
+          '<button class="btn-share-voice" data-id="' + post.id + '" title="シェア">' + uiIcon('shareVoice', 14) + ' シェア</button>' +
           resolveButton +
           '<button class="btn-agree ' + (agreedSet.has(post.id) ? 'agreed' : '') + '" data-id="' + post.id + '">' +
             uiIcon('thumbsup', 14) + ' <span class="agree-count">' + post.agrees + '</span>' +
