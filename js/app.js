@@ -71,6 +71,7 @@ var UI_ICONS = {
   clipboard:   'images/icons/clipboard.svg',
   circleOk:    'images/icons/circle-ok.svg',
   map:         'images/icons/map-icon.svg',
+  shareVoice:  'images/icons/share-voice.svg',
 };
 
 // UIアイコンHTML生成（インライン用、カラーアイコン）
@@ -402,6 +403,15 @@ function initUI() {
   reportDetail.addEventListener('input', function() {
     document.getElementById('reportCharCount').textContent = this.value.length + '/200';
   });
+
+  // Share sheet events
+  document.getElementById('closeShareSheet').addEventListener('click', closeShareSheet);
+  document.getElementById('shareSheetOverlay').addEventListener('click', function(e) {
+    if (e.target === this) closeShareSheet();
+  });
+  document.getElementById('shareToX').addEventListener('click', shareToX);
+  document.getElementById('shareToThreads').addEventListener('click', shareToThreads);
+  document.getElementById('shareCopyText').addEventListener('click', shareCopyText);
 
   // Post thanks modal events
   document.getElementById('closePostThanks').addEventListener('click', closePostThanksModal);
@@ -1208,6 +1218,7 @@ function renderPosts() {
       '<div class="post-footer">' +
         '<span class="post-date">' + formatDate(post.createdAt) + '</span>' +
         '<div class="post-agree">' +
+          '<button class="btn-share-voice" data-id="' + post.id + '" title="シェア">' + uiIcon('shareVoice', 14) + ' シェア</button>' +
           '<button class="btn-report-post" data-id="' + post.id + '" title="通報">' + uiIcon('warning', 13) + '</button>' +
           resolveButton +
           '<button class="btn-agree ' + (agreedSet.has(post.id) ? 'agreed' : '') + '" data-id="' + post.id + '">' +
@@ -1217,7 +1228,7 @@ function renderPosts() {
       '</div>';
 
     item.addEventListener('click', function(e) {
-      if (e.target.closest('.btn-agree') || e.target.closest('.btn-resolve') || e.target.closest('.btn-report-post')) return;
+      if (e.target.closest('.btn-agree') || e.target.closest('.btn-resolve') || e.target.closest('.btn-report-post') || e.target.closest('.btn-share-voice')) return;
       if (markers[post.id]) {
         map.setView([post.lat, post.lng], 16);
         markers[post.id].openPopup();
@@ -1243,6 +1254,14 @@ function renderPosts() {
       reportPostBtn.addEventListener('click', function(e) {
         e.stopPropagation();
         openReportForm(post.id);
+      });
+    }
+
+    var shareBtn = item.querySelector('.btn-share-voice');
+    if (shareBtn) {
+      shareBtn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        openShareSheet(post);
       });
     }
 
@@ -2298,6 +2317,93 @@ function showYonaboThanks() {
     toast.classList.remove('show');
     setTimeout(function() { toast.remove(); }, 400);
   }, 3000);
+}
+
+// === SNSシェア機能 ===
+var SHARE_INTROS = [
+  '「米子市民の声マップ」に声が届きました。',
+  '米子市民のリアルな声、聞いてください。',
+  'こんな声が届いています。あなたはどう思いますか？',
+  '米子のこと、一緒に考えませんか？',
+  '今日届いた米子市民の声です。',
+  '米子に暮らす人の、ちいさな声。',
+  'あなたの街でも同じこと、ありませんか？',
+  '米子のまちの声、届いてます。',
+];
+
+var SITE_URL = 'https://aoktik.github.io/yonago-voice-map/';
+var pendingShareText = '';
+
+function getShareText(post) {
+  var intro = SHARE_INTROS[Math.floor(Math.random() * SHARE_INTROS.length)];
+  var cat = CATEGORIES.find(function(c) { return c.id === post.category; });
+  var catName = cat ? '【' + cat.name + '】' : '';
+  var msg = post.message.length > 100 ? post.message.slice(0, 100) + '…' : post.message;
+  return intro + '\n\n' + catName + '\n' + msg + '\n\n' + SITE_URL;
+}
+
+function openShareSheet(post) {
+  pendingShareText = getShareText(post);
+  var cat = CATEGORIES.find(function(c) { return c.id === post.category; });
+  var catName = cat ? cat.name : '';
+
+  var preview = document.getElementById('shareSheetPreview');
+  preview.innerHTML =
+    '<div class="share-preview-intro">シェアされる内容</div>' +
+    '<div class="share-preview-text">' + escapeHtml(pendingShareText) + '</div>';
+
+  document.getElementById('shareSheetOverlay').classList.add('active');
+  document.body.style.overflow = 'hidden';
+  gtag('event', 'share_sheet_open', { category: catName });
+}
+
+function closeShareSheet() {
+  document.getElementById('shareSheetOverlay').classList.remove('active');
+  document.body.style.overflow = '';
+}
+
+function shareToX() {
+  var url = 'https://x.com/intent/tweet?text=' + encodeURIComponent(pendingShareText);
+  window.open(url, '_blank');
+  closeShareSheet();
+  gtag('event', 'share_action', { platform: 'x' });
+}
+
+function shareToThreads() {
+  var url = 'https://www.threads.net/intent/post?text=' + encodeURIComponent(pendingShareText);
+  window.open(url, '_blank');
+  closeShareSheet();
+  gtag('event', 'share_action', { platform: 'threads' });
+}
+
+function shareCopyText() {
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(pendingShareText).then(function() {
+      var btn = document.getElementById('shareCopyText');
+      btn.classList.add('copied');
+      btn.querySelector('span').textContent = 'コピーしました！';
+      setTimeout(function() {
+        btn.classList.remove('copied');
+        btn.querySelector('span').textContent = 'テキストをコピー';
+      }, 2000);
+    });
+  } else {
+    // fallback
+    var ta = document.createElement('textarea');
+    ta.value = pendingShareText;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    var btn = document.getElementById('shareCopyText');
+    btn.classList.add('copied');
+    btn.querySelector('span').textContent = 'コピーしました！';
+    setTimeout(function() {
+      btn.classList.remove('copied');
+      btn.querySelector('span').textContent = 'テキストをコピー';
+    }, 2000);
+  }
+  gtag('event', 'share_action', { platform: 'copy' });
 }
 
 // === 投稿後ありがとうモーダル（投票誘導） ===

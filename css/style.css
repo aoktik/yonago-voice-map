@@ -3458,6 +3458,161 @@ body {
   text-decoration: underline;
 }
 
+/* ===== SNSシェアボタン ===== */
+.btn-share-voice {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  background: none;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 4px 10px;
+  font-size: 0.72rem;
+  color: #64748b;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-weight: 500;
+}
+.btn-share-voice:hover {
+  background: #f0f7ff;
+  border-color: var(--accent-light);
+  color: var(--accent);
+}
+.btn-share-voice .share-icon {
+  width: 14px;
+  height: 14px;
+  opacity: 0.7;
+  transition: opacity 0.2s;
+}
+.btn-share-voice:hover .share-icon {
+  opacity: 1;
+}
+
+/* シェアシート（ボトムシート） */
+.share-sheet-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 10001;
+  background: rgba(0,0,0,0.45);
+  justify-content: center;
+  align-items: flex-end;
+}
+.share-sheet-overlay.active {
+  display: flex;
+}
+.share-sheet {
+  background: #fff;
+  border-radius: 20px 20px 0 0;
+  width: 100%;
+  max-width: 480px;
+  padding: 0;
+  animation: sheetSlideUp 0.3s ease;
+  box-shadow: 0 -8px 40px rgba(0,0,0,0.12);
+}
+@keyframes sheetSlideUp {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+.share-sheet-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 20px 12px;
+  border-bottom: 1px solid #f1f5f9;
+}
+.share-sheet-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #1e293b;
+}
+.share-sheet-close {
+  background: none;
+  border: none;
+  font-size: 18px;
+  color: #94a3b8;
+  cursor: pointer;
+  padding: 4px;
+  line-height: 1;
+}
+.share-sheet-close:hover { color: #475569; }
+
+/* プレビュー */
+.share-sheet-preview {
+  padding: 14px 20px;
+  border-bottom: 1px solid #f1f5f9;
+}
+.share-preview-intro {
+  font-size: 0.72rem;
+  color: #94a3b8;
+  margin-bottom: 6px;
+  font-weight: 500;
+}
+.share-preview-text {
+  font-size: 0.82rem;
+  color: #334155;
+  line-height: 1.6;
+  background: #f8fafc;
+  border-radius: 10px;
+  padding: 12px 14px;
+  border: 1px solid #e2e8f0;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* シェアボタン群 */
+.share-sheet-buttons {
+  padding: 16px 20px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.share-btn {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  border: none;
+  border-radius: 12px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.share-btn:active {
+  transform: scale(0.98);
+}
+.share-btn-x {
+  background: #0f1419;
+  color: #fff;
+}
+.share-btn-x:hover { background: #1a2029; }
+.share-btn-threads {
+  background: #000000;
+  color: #fff;
+}
+.share-btn-threads:hover { background: #1a1a1a; }
+.share-btn-copy {
+  background: #f1f5f9;
+  color: #334155;
+}
+.share-btn-copy:hover { background: #e2e8f0; }
+.share-btn-copy.copied {
+  background: #ecfdf5;
+  color: #059669;
+}
+
+/* デスクトップではシートを中央寄せ */
+@media (min-width: 769px) {
+  .share-sheet-overlay {
+    align-items: center;
+  }
+  .share-sheet {
+    border-radius: 20px;
+    max-width: 420px;
+  }
+}
+
 /* フッター */
 .disaster-modal-footer {
   padding: 16px 24px;

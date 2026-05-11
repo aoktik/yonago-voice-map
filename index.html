@@ -26,7 +26,7 @@
   <!-- Google Analytics (初期化はapp.jsで実行 - CSP対応) -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-759KNPK2B6"></script>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha384-sHL9NAb7lN7rfvG5lfHpm643Xkcjzp4jFvuavGOndn6pjVqS6ny56CAt3nsEVT4H" crossorigin="anonymous" />
-  <link rel="stylesheet" href="css/style.css?v=20260511g">
+  <link rel="stylesheet" href="css/style.css?v=20260511i">
 </head>
 <body>
   <header class="header">
@@ -365,6 +365,31 @@
     </div>
   </div>
 
+  <!-- SNSシェアシート -->
+  <div class="share-sheet-overlay" id="shareSheetOverlay">
+    <div class="share-sheet">
+      <div class="share-sheet-header">
+        <span class="share-sheet-title">この声をシェア</span>
+        <button class="share-sheet-close" id="closeShareSheet">✕</button>
+      </div>
+      <div class="share-sheet-preview" id="shareSheetPreview"></div>
+      <div class="share-sheet-buttons">
+        <button class="share-btn share-btn-x" id="shareToX">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+          <span>X（Twitter）</span>
+        </button>
+        <button class="share-btn share-btn-threads" id="shareToThreads">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M12.186 24h-.007c-3.581-.024-6.334-1.205-8.184-3.509C2.35 18.44 1.5 15.586 1.472 12.01v-.017c.03-3.579.879-6.43 2.525-8.482C5.845 1.205 8.6.024 12.18 0h.014c2.746.02 5.043.725 6.826 2.098 1.677 1.29 2.858 3.13 3.509 5.467l-2.04.569c-1.104-3.96-3.898-5.984-8.304-6.015-2.91.022-5.11.936-6.54 2.717C4.307 6.504 3.616 8.914 3.59 12c.025 3.086.718 5.496 2.057 7.164 1.43 1.783 3.631 2.698 6.54 2.717 2.623-.02 4.358-.631 5.8-2.045 1.647-1.613 1.618-3.593 1.09-4.798-.34-.779-.963-1.4-1.803-1.837-.395 2.604-1.203 4.508-2.49 5.478-1.066.803-2.404 1.094-3.658.794-1.09-.26-2.003-.933-2.57-1.894-.58-.985-.69-2.16-.307-3.31.594-1.78 2.158-3.052 3.98-3.235a9.464 9.464 0 011.418-.056c-.073-.457-.19-.855-.363-1.178-.432-.805-1.195-1.225-2.27-1.249h-.04c-.88.012-1.683.315-2.156.814l-1.416-1.428c.834-.875 2.063-1.36 3.517-1.393h.058c1.552.032 2.735.612 3.514 1.727.396.566.67 1.248.834 2.038.672.122 1.29.306 1.855.564 1.227.56 2.165 1.467 2.714 2.626.786 1.654.857 4.376-1.248 6.498-1.794 1.81-4.026 2.591-7.228 2.614zM9.91 14.306c-.233.698-.17 1.373.177 1.963.337.572.891.94 1.56 1.1.834.2 1.756-.013 2.503-.578.886-.67 1.552-2.07 1.906-4.116a7.01 7.01 0 00-1.835-.256c-1.326.103-2.541 1.038-2.986 2.39z"/></svg>
+          <span>Threads</span>
+        </button>
+        <button class="share-btn share-btn-copy" id="shareCopyText">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+          <span>テキストをコピー</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- よな坊プロフィール -->
   <div class="post-form-overlay" id="yonaboProfileOverlay">
     <div class="yonabo-profile">
@@ -497,6 +522,6 @@
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha384-cxOPjt7s7Iz04uaHJceBmS+qpjv2JkIHNVcuOrM+YHwZOmJGBXI00mdUXEq65HTH" crossorigin="anonymous"></script>
   <script src="js/yonago-boundary.js"></script>
-  <script src="js/app.js?v=20260511g"></script>
+  <script src="js/app.js?v=20260511i"></script>
 </body>
 </html>
