@@ -1058,10 +1058,18 @@ var CATEGORY_ALIAS = {
   community: 'idea',
 };
 
+// 旧サンプル投稿のID（賛同数をリセット対象）
+var LEGACY_SAMPLE_IDS = [
+  'sample_01','sample_02','sample_03','sample_04','sample_05','sample_06','sample_07',
+  'sv2_01','sv2_02','sv2_03','sv2_04','sv2_05','sv2_06','sv2_07','sv2_08','sv2_09','sv2_10','sv2_11','sv2_12'
+];
+
 function normalizePost(row) {
   var cat = row.category;
   if (CATEGORY_ALIAS[cat]) cat = CATEGORY_ALIAS[cat];
   if (VALID_CATEGORY_IDS.indexOf(cat) === -1) cat = 'idea';
+  var agrees = row.agrees;
+  if (LEGACY_SAMPLE_IDS.indexOf(row.id) !== -1) agrees = 1;
   return {
     id: row.id,
     lat: row.lat,
@@ -1069,7 +1077,7 @@ function normalizePost(row) {
     category: cat,
     nickname: row.nickname,
     message: row.message,
-    agrees: row.agrees,
+    agrees: agrees,
     isSample: false,
     resolved: row.resolved || false,
     resolvedMessage: row.resolved_message || null,
