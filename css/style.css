@@ -2400,6 +2400,43 @@ body {
   .yt-card-actions {
     gap: 6px;
   }
+
+  /* YouTube準備中モーダル モバイル対応 */
+  .yt-modal-overlay {
+    padding: 16px;
+    background: rgba(0,0,0,0.6);
+  }
+  .yt-modal {
+    max-width: 340px;
+    padding: 24px 20px;
+    background: #ffffff;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+  .yt-modal-icon svg {
+    width: 40px;
+    height: 40px;
+  }
+  .yt-modal-title {
+    font-size: 1.05rem;
+  }
+  .yt-modal-desc {
+    font-size: 0.82rem;
+  }
+  .yt-modal-card {
+    padding: 12px;
+    gap: 10px;
+  }
+  .yt-modal-card-title {
+    font-size: 0.8rem;
+  }
+  .yt-modal-card-text {
+    font-size: 0.75rem;
+  }
+  .yt-modal-vote-btn {
+    padding: 9px 20px;
+    font-size: 0.85rem;
+  }
 }
 
 @media (max-width: 480px) {
