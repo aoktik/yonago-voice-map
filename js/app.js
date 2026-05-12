@@ -169,6 +169,8 @@ async function init() {
   initLocate();
   renderFilterButtons();
   await loadData();
+  var mapLoading = document.getElementById('mapLoading');
+  if (mapLoading) mapLoading.classList.add('hidden');
   await migrateLocalStorageToSupabase();
   renderPosts();
   renderMarkers();
@@ -191,7 +193,7 @@ async function migrateLocalStorageToSupabase() {
 
     var existingIds = new Set(posts.map(function(p) { return p.id; }));
     var toMigrate = localPosts.filter(function(p) {
-      return p && p.id && !existingIds.has(p.id) && !isSamplePost(p)
+      return p && p.id && !existingIds.has(p.id)
         && typeof p.message === 'string' && p.message.length > 0
         && moderateContent(p.message).ok;
     });
@@ -277,7 +279,7 @@ function initMap() {
 
   map.on('click', function(e) {
     if (!isInYonago(e.latlng)) {
-      alert('📍 米子市内の場所をクリックしてください');
+      showToast('米子市内の場所をクリックしてください', 'info');
       return;
     }
     pendingLatLng = e.latlng;
@@ -439,6 +441,29 @@ function initUI() {
     });
     catSelect.appendChild(btn);
   });
+
+  // Escapeキーでモーダルを閉じる
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape' && modalStack.length > 0) {
+      var top = modalStack[modalStack.length - 1];
+      var closeFns = {
+        postFormOverlay: closePostForm,
+        resolveFormOverlay: closeResolveForm,
+        approveFormOverlay: closeApproveForm,
+        dashboardOverlay: closeDashboard,
+        topicDetailOverlay: closeTopicDetail,
+        yonaboProfileOverlay: closeYonaboProfile,
+        disasterOverlay: closeDisasterModal,
+        youtubeModalOverlay: closeYoutubeModal,
+        reportFormOverlay: closeReportForm,
+        shareSheetOverlay: closeShareSheet,
+        postThanksOverlay: closePostThanksModal,
+      };
+      if (closeFns[top.overlayId]) {
+        closeFns[top.overlayId]();
+      }
+    }
+  });
 }
 
 // === 検索機能 ===
@@ -599,11 +624,11 @@ async function doSearch() {
       map.setView([lat, lng], 16);
       gtag('event', 'search', { search_term: query, source: 'nominatim' });
     } else {
-      alert('「' + query + '」が見つかりませんでした。\n別のキーワードで試してみてください。');
+      showToast('「' + query + '」が見つかりませんでした', 'info');
     }
   } catch (e) {
     console.error('Search failed');
-    alert('検索に失敗しました。もう一度お試しください。');
+    showToast('検索に失敗しました', 'error');
   } finally {
     btn.disabled = false;
     btn.innerHTML = uiIconWhite('search', 16);
@@ -617,7 +642,7 @@ var locationCircle = null;
 function initLocate() {
   document.getElementById('locateBtn').addEventListener('click', function() {
     if (!navigator.geolocation) {
-      alert('お使いのブラウザは位置情報に対応していません。');
+      showToast('お使いのブラウザは位置情報に対応していません', 'error');
       return;
     }
 
@@ -669,9 +694,9 @@ function initLocate() {
         btn.classList.remove('locating');
         btn.innerHTML = uiIcon('location', 18);
         if (err.code === 1) {
-          alert('位置情報の使用が許可されていません。\nブラウザの設定から許可してください。');
+          showToast('位置情報の使用が許可されていません', 'error');
         } else {
-          alert('現在地を取得できませんでした。');
+          showToast('現在地を取得できませんでした', 'error');
         }
       },
       { enableHighAccuracy: true, timeout: 10000 }
@@ -725,7 +750,7 @@ function openPostForm(latlng) {
   document.getElementById('charCount').textContent = '0/200';
   selectedCategory = null;
   document.querySelectorAll('.category-option').forEach(function(el) { el.classList.remove('selected'); });
-  document.getElementById('postFormOverlay').classList.add('active');
+  openModal('postFormOverlay');
 }
 
 function reverseGeocode(lat, lng, callback) {
@@ -763,7 +788,7 @@ function reverseGeocode(lat, lng, callback) {
 }
 
 function closePostForm() {
-  document.getElementById('postFormOverlay').classList.remove('active');
+  closeModal('postFormOverlay');
   pendingLatLng = null;
   selectedCategory = null;
 }
@@ -777,11 +802,11 @@ function openResolveForm(postId) {
   document.getElementById('resolveNickname').value = '';
   document.getElementById('resolveMessage').value = '';
   document.getElementById('resolveCharCount').textContent = '0/200';
-  document.getElementById('resolveFormOverlay').classList.add('active');
+  openModal('resolveFormOverlay');
 }
 
 function closeResolveForm() {
-  document.getElementById('resolveFormOverlay').classList.remove('active');
+  closeModal('resolveFormOverlay');
   pendingResolvePostId = null;
 }
 
@@ -790,7 +815,7 @@ async function submitResolve() {
   var nickname = sanitizeText(document.getElementById('resolveNickname').value, 20) || '匿名さん';
 
   if (!message) {
-    alert('改善内容を入力してください');
+    showToast('改善内容を入力してください', 'info');
     return;
   }
   if (!pendingResolvePostId) return;
@@ -814,10 +839,10 @@ async function submitResolve() {
 
     closeResolveForm();
     gtag('event', 'resolve_report_submit');
-    alert('📩 改善報告を送信しました！\n管理者が確認後、サイトに反映されます。');
+    showToast('改善報告を送信しました', 'success');
   } catch (e) {
     console.error('Resolve report failed');
-    alert('送信に失敗しました。もう一度お試しください。');
+    showToast('送信に失敗しました', 'error');
   } finally {
     submitBtn.disabled = false;
     submitBtn.innerHTML = uiIcon('send', 14) + ' 報告を送る';
@@ -836,18 +861,18 @@ function openApproveForm(reportId) {
     '<strong>報告者:</strong> ' + escapeHtml(report.nickname) + '<br>' +
     '<strong>改善内容:</strong> ' + escapeHtml(report.message);
   document.getElementById('approvePassword').value = '';
-  document.getElementById('approveFormOverlay').classList.add('active');
+  openModal('approveFormOverlay');
 }
 
 function closeApproveForm() {
-  document.getElementById('approveFormOverlay').classList.remove('active');
+  closeModal('approveFormOverlay');
   pendingApproveReportId = null;
 }
 
 async function processReport(action) {
   var password = document.getElementById('approvePassword').value.trim();
   if (!password) {
-    alert('管理者パスワードを入力してください');
+    showToast('管理者パスワードを入力してください', 'info');
     return;
   }
   if (!pendingApproveReportId) return;
@@ -875,11 +900,11 @@ async function processReport(action) {
           post.resolvedMessage = report.message;
         }
       }
-      alert('✅ 承認しました！改善済みとして反映されます。');
+      showToast('承認しました！改善済みとして反映されます', 'success');
     } else {
       var rpt = resolveReports.find(function(r) { return r.id === pendingApproveReportId; });
       if (rpt) rpt.status = 'rejected';
-      alert('❌ 却下しました。');
+      showToast('却下しました', 'info');
     }
 
     closeApproveForm();
@@ -889,7 +914,7 @@ async function processReport(action) {
     renderPendingReports();
   } catch (e) {
     console.error('Process report failed');
-    alert('処理に失敗しました。\nパスワードが正しいか確認してください。');
+    showToast('処理に失敗しました。パスワードを確認してください', 'error');
   } finally {
     approveBtn.disabled = false;
     rejectBtn.disabled = false;
@@ -999,18 +1024,18 @@ function showModerationAlert(message) {
 async function submitPost() {
   var msg = sanitizeText(document.getElementById('message').value, 200);
   if (!selectedCategory || VALID_CATEGORY_IDS.indexOf(selectedCategory) === -1) {
-    alert('カテゴリを選択してください');
+    showToast('カテゴリを選択してください', 'info');
     return;
   }
   if (!msg) {
-    alert('声を入力してください');
+    showToast('声を入力してください', 'info');
     return;
   }
 
   // 利用規約同意チェック
   var termsCheckbox = document.getElementById('termsAgree');
   if (termsCheckbox && !termsCheckbox.checked) {
-    alert('投稿するには利用規約とプライバシーポリシーへの同意が必要です。');
+    showToast('利用規約への同意が必要です', 'info');
     return;
   }
 
@@ -1058,7 +1083,7 @@ async function submitPost() {
     showPostThanksModal();
     gtag('event', 'post_submit', { category: selectedCategory });
   } catch (e) {
-    alert('投稿に失敗しました。もう一度お試しください。');
+    showToast('投稿に失敗しました', 'error');
     console.error('Post submit failed');
   } finally {
     submitBtn.disabled = false;
@@ -1103,9 +1128,6 @@ function normalizePost(row) {
   };
 }
 
-function isSamplePost(p) {
-  return false;
-}
 
 function createMarkerIcon(cat, resolved) {
   var resolvedBadge = resolved ? '<div style="position:absolute;top:-4px;right:-4px;background:white;border-radius:50%;width:16px;height:16px;display:flex;align-items:center;justify-content:center;box-shadow:0 1px 3px rgba(0,0,0,0.3);">' + uiIcon('check', 14) + '</div>' : '';
@@ -1130,8 +1152,6 @@ function renderMarkers() {
 
     var marker = L.marker([post.lat, post.lng], { icon: createMarkerIcon(cat, post.resolved) }).addTo(map);
 
-    var isPopupSample = isSamplePost(post);
-    var popupSampleNote = isPopupSample ? '<div class="popup-sample-note">' + uiIcon('pushpin', 13) + ' これは投稿の一例です</div>' : '';
     var popupResolved = '';
     if (post.resolved && post.resolvedMessage) {
       popupResolved = '<div class="popup-resolved">' +
@@ -1144,7 +1164,6 @@ function renderMarkers() {
       popupResolveBtn = '<button class="popup-resolve-btn" data-post-id="' + escapeHtml(post.id) + '">' + uiIcon('celebrate', 14) + ' 改善報告</button>';
     }
     var popupHtml = '<div class="popup-content">' +
-      popupSampleNote +
       '<span class="popup-category" style="background:' + cat.color + '">' + catIconHtml(cat, 12) + ' ' + cat.name + '</span>' +
       '<p class="popup-message">' + escapeHtml(post.message) + '</p>' +
       popupResolved +
@@ -1193,8 +1212,6 @@ function renderPosts() {
 
     var item = document.createElement('div');
     item.className = 'post-item';
-    var isSample = isSamplePost(post);
-    var sampleBadge = isSample ? '<span class="sample-badge">' + uiIcon('pushpin', 12) + ' 投稿例</span>' : '';
     var resolvedBadge = post.resolved ? '<span class="resolved-badge">' + uiIcon('check', 12) + ' 改善済み</span>' : '';
     var resolvedSection = '';
     if (post.resolved && post.resolvedMessage) {
@@ -1209,7 +1226,6 @@ function renderPosts() {
     item.innerHTML =
       '<div class="post-item-header">' +
         '<span class="post-category-badge" style="background:' + cat.color + '">' + catIconHtml(cat, 12) + ' ' + cat.name + '</span>' +
-        sampleBadge +
         resolvedBadge +
         '<span class="post-nickname">' + escapeHtml(post.nickname) + '</span>' +
       '</div>' +
@@ -1407,11 +1423,11 @@ async function toggleAgree(postId) {
 function openDashboard() {
   gtag('event', 'dashboard_open');
   renderDashboard();
-  document.getElementById('dashboardOverlay').classList.add('active');
+  openModal('dashboardOverlay');
 }
 
 function closeDashboard() {
-  document.getElementById('dashboardOverlay').classList.remove('active');
+  closeModal('dashboardOverlay');
 }
 
 function renderDashboard() {
@@ -1428,7 +1444,7 @@ function renderDashboard() {
 
 function renderCategoryChart() {
   var container = document.getElementById('categoryChart');
-  var realPosts = posts.filter(function(p) { return !isSamplePost(p); });
+  var realPosts = posts;
   var counts = {};
   CATEGORIES.forEach(function(c) { counts[c.id] = 0; });
   realPosts.forEach(function(p) { if (counts[p.category] !== undefined) counts[p.category]++; });
@@ -1451,7 +1467,7 @@ function renderCategoryChart() {
 
 function renderTopRanking() {
   var container = document.getElementById('topRanking');
-  var realPosts = posts.filter(function(p) { return !isSamplePost(p); });
+  var realPosts = posts;
   var sorted = realPosts.slice().sort(function(a, b) { return b.agrees - a.agrees; });
   var top5 = sorted.slice(0, 5);
 
@@ -1476,7 +1492,7 @@ function renderTopRanking() {
 
 function renderHotTopics() {
   var container = document.getElementById('hotTopics');
-  var realPosts = posts.filter(function(p) { return !isSamplePost(p); });
+  var realPosts = posts;
 
   var areaMap = {};
   realPosts.forEach(function(post) {
@@ -1522,7 +1538,7 @@ function renderHotTopics() {
 // === C. サイト活動サマリー ===
 function renderDashboardSummary() {
   var container = document.getElementById('dashboardSummary');
-  var realPosts = posts.filter(function(p) { return !isSamplePost(p); });
+  var realPosts = posts;
   var totalPosts = realPosts.length;
   var totalAgrees = realPosts.reduce(function(sum, p) { return sum + p.agrees; }, 0);
   var resolvedPosts = realPosts.filter(function(p) { return p.resolved; });
@@ -1557,7 +1573,7 @@ function renderDashboardSummary() {
 // === A. 改善達成状況 ===
 function renderResolvedChart() {
   var container = document.getElementById('resolvedChart');
-  var realPosts = posts.filter(function(p) { return !isSamplePost(p); });
+  var realPosts = posts;
   var total = realPosts.length;
   var resolved = realPosts.filter(function(p) { return p.resolved; }).length;
   var unresolved = total - resolved;
@@ -1607,7 +1623,7 @@ function renderResolvedChart() {
 // === A. 改善された声ランキング ===
 function renderResolvedRanking() {
   var container = document.getElementById('resolvedRanking');
-  var realPosts = posts.filter(function(p) { return !isSamplePost(p); });
+  var realPosts = posts;
   var resolvedPosts = realPosts.filter(function(p) { return p.resolved; })
     .sort(function(a, b) { return b.agrees - a.agrees; })
     .slice(0, 3);
@@ -1639,7 +1655,7 @@ function renderResolvedRanking() {
 // === A. 月別投稿数の推移 ===
 function renderMonthlyChart() {
   var container = document.getElementById('monthlyChart');
-  var realPosts = posts.filter(function(p) { return !isSamplePost(p); });
+  var realPosts = posts;
 
   if (realPosts.length === 0) {
     container.innerHTML = '<div class="empty-state">投稿が集まるとグラフが表示されます</div>';
@@ -1923,37 +1939,62 @@ async function loadData() {
     topicVotes = {};
   }
 
-  // Load posts from Supabase
-  try {
-    var data = await supabaseRequest('GET', 'posts?order=created_at.desc&limit=500');
-    if (Array.isArray(data)) {
-      posts = data.map(normalizePost);
-    }
-  } catch (e) {
+  // Load from Supabase in parallel
+  var results = await Promise.allSettled([
+    supabaseRequest('GET', 'posts?order=created_at.desc&limit=500'),
+    supabaseRequest('GET', 'youtube_topics?order=likes.desc'),
+    supabaseRequest('GET', 'resolve_reports?order=created_at.desc'),
+  ]);
+
+  // posts
+  if (results[0].status === 'fulfilled' && Array.isArray(results[0].value)) {
+    posts = results[0].value.map(normalizePost);
+  } else {
     console.error('Failed to load posts');
     posts = [];
   }
 
-  // Load YouTube topics from Supabase
-  try {
-    var topicData = await supabaseRequest('GET', 'youtube_topics?order=likes.desc');
-    if (Array.isArray(topicData)) {
-      youtubeTopics = topicData;
-    }
-  } catch (e) {
+  // youtube topics
+  if (results[1].status === 'fulfilled' && Array.isArray(results[1].value)) {
+    youtubeTopics = results[1].value;
+  } else {
     console.error('Failed to load YouTube topics');
     youtubeTopics = [];
   }
 
-  // Load resolve reports from Supabase
-  try {
-    var reportData = await supabaseRequest('GET', 'resolve_reports?order=created_at.desc');
-    if (Array.isArray(reportData)) {
-      resolveReports = reportData;
-    }
-  } catch (e) {
+  // resolve reports
+  if (results[2].status === 'fulfilled' && Array.isArray(results[2].value)) {
+    resolveReports = results[2].value;
+  } else {
     console.error('Failed to load resolve reports');
     resolveReports = [];
+  }
+}
+
+// === モーダルフォーカス管理 ===
+var modalStack = [];
+
+function openModal(overlayId, focusTarget) {
+  var overlay = document.getElementById(overlayId);
+  if (!overlay) return;
+  var trigger = document.activeElement;
+  modalStack.push({ overlayId: overlayId, trigger: trigger });
+  overlay.classList.add('active');
+  if (focusTarget) {
+    setTimeout(function() { focusTarget.focus(); }, 50);
+  } else {
+    var first = overlay.querySelector('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+    if (first) setTimeout(function() { first.focus(); }, 50);
+  }
+}
+
+function closeModal(overlayId) {
+  var overlay = document.getElementById(overlayId);
+  if (!overlay) return;
+  overlay.classList.remove('active');
+  var entry = modalStack.pop();
+  if (entry && entry.trigger && typeof entry.trigger.focus === 'function') {
+    try { entry.trigger.focus(); } catch(e) {}
   }
 }
 
@@ -2183,42 +2224,42 @@ function openTopicDetail(topicId) {
     });
   });
 
-  document.getElementById('topicDetailOverlay').classList.add('active');
+  openModal('topicDetailOverlay');
   gtag('event', 'topic_detail_open', { topic_id: topicId });
 }
 
 function closeTopicDetail() {
-  document.getElementById('topicDetailOverlay').classList.remove('active');
+  closeModal('topicDetailOverlay');
 }
 
 // === よな坊プロフィール ===
 function openYonaboProfile() {
-  document.getElementById('yonaboProfileOverlay').classList.add('active');
+  openModal('yonaboProfileOverlay');
 }
 
 function closeYonaboProfile() {
-  document.getElementById('yonaboProfileOverlay').classList.remove('active');
+  closeModal('yonaboProfileOverlay');
 }
 
 // === 防災情報リンク集モーダル ===
 function openDisasterModal() {
-  document.getElementById('disasterOverlay').classList.add('active');
+  openModal('disasterOverlay');
   document.body.style.overflow = 'hidden';
 }
 
 function closeDisasterModal() {
-  document.getElementById('disasterOverlay').classList.remove('active');
+  closeModal('disasterOverlay');
   document.body.style.overflow = '';
 }
 
 // === YouTube準備中モーダル ===
 function openYoutubeModal() {
-  document.getElementById('youtubeModalOverlay').classList.add('active');
+  openModal('youtubeModalOverlay');
   document.body.style.overflow = 'hidden';
 }
 
 function closeYoutubeModal() {
-  document.getElementById('youtubeModalOverlay').classList.remove('active');
+  closeModal('youtubeModalOverlay');
   document.body.style.overflow = '';
 }
 
@@ -2284,18 +2325,18 @@ function openReportForm(postId) {
   // Reset radio
   var radios = document.querySelectorAll('input[name="reportReason"]');
   radios.forEach(function(r) { r.checked = false; });
-  document.getElementById('reportFormOverlay').classList.add('active');
+  openModal('reportFormOverlay');
 }
 
 function closeReportForm() {
-  document.getElementById('reportFormOverlay').classList.remove('active');
+  closeModal('reportFormOverlay');
   pendingReportPostId = null;
 }
 
 async function submitReportForm() {
   var reason = document.querySelector('input[name="reportReason"]:checked');
   if (!reason) {
-    alert('通報理由を選択してください');
+    showToast('通報理由を選択してください', 'info');
     return;
   }
 
@@ -2315,14 +2356,29 @@ async function submitReportForm() {
 
     closeReportForm();
     gtag('event', 'post_report', { reason: reason.value });
-    alert('通報を送信しました。\n管理者が確認いたします。ご協力ありがとうございます。');
+    showToast('通報を送信しました。ご協力ありがとうございます', 'success');
   } catch (e) {
     console.error('Report failed');
-    alert('通報の送信に失敗しました。もう一度お試しください。');
+    showToast('通報の送信に失敗しました', 'error');
   } finally {
     submitBtn.disabled = false;
     submitBtn.textContent = '通報を送信';
   }
+}
+
+// === 汎用トースト通知 ===
+function showToast(message, type) {
+  var toast = document.createElement('div');
+  toast.className = 'toast toast-' + (type || 'info');
+  toast.textContent = message;
+  document.body.appendChild(toast);
+  requestAnimationFrame(function() {
+    toast.classList.add('show');
+  });
+  setTimeout(function() {
+    toast.classList.remove('show');
+    setTimeout(function() { toast.remove(); }, 400);
+  }, 3500);
 }
 
 // === 市外トースト ===
@@ -2340,22 +2396,6 @@ function showOutOfAreaToast() {
   }, 4000);
 }
 
-// === よな坊サンクストースト ===
-function showYonaboThanks() {
-  var toast = document.createElement('div');
-  toast.className = 'yonabo-toast';
-  toast.innerHTML =
-    '<img src="images/yonabou_thank_you.png" alt="よな坊" class="yonabo-toast-img">' +
-    '<span>声を届けてくれてありがとう！</span>';
-  document.body.appendChild(toast);
-  requestAnimationFrame(function() {
-    toast.classList.add('show');
-  });
-  setTimeout(function() {
-    toast.classList.remove('show');
-    setTimeout(function() { toast.remove(); }, 400);
-  }, 3000);
-}
 
 // === SNSシェア機能 ===
 var SHARE_INTROS = [
@@ -2390,13 +2430,13 @@ function openShareSheet(post) {
     '<div class="share-preview-intro">シェアされる内容</div>' +
     '<div class="share-preview-text">' + escapeHtml(pendingShareText) + '</div>';
 
-  document.getElementById('shareSheetOverlay').classList.add('active');
+  openModal('shareSheetOverlay');
   document.body.style.overflow = 'hidden';
   gtag('event', 'share_sheet_open', { category: catName });
 }
 
 function closeShareSheet() {
-  document.getElementById('shareSheetOverlay').classList.remove('active');
+  closeModal('shareSheetOverlay');
   document.body.style.overflow = '';
 }
 
@@ -2473,13 +2513,13 @@ function showPostThanksModal() {
       '</div>';
   }
 
-  overlay.classList.add('active');
+  openModal('postThanksOverlay');
   document.body.style.overflow = 'hidden';
   gtag('event', 'post_thanks_modal_show');
 }
 
 function closePostThanksModal() {
-  document.getElementById('postThanksOverlay').classList.remove('active');
+  closeModal('postThanksOverlay');
   document.body.style.overflow = '';
 }
 
