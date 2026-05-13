@@ -31,12 +31,12 @@
   --shadow: 0 2px 8px rgba(0,0,0,0.08);
   --shadow-lg: 0 8px 32px rgba(0,0,0,0.12);
 
-  --z-header: 100;
-  --z-map-controls: 200;
-  --z-modal: 300;
-  --z-modal-top: 350;
-  --z-toast: 400;
-  --z-share: 500;
+  --z-header: 1100;
+  --z-map-controls: 1200;
+  --z-modal: 2000;
+  --z-modal-top: 2500;
+  --z-toast: 3000;
+  --z-share: 3500;
 
   --cat-traffic: #ef4444;
   --cat-shop: #f59e0b;
