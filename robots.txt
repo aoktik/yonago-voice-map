@@ -1,0 +1,11 @@
+User-agent: *
+Allow: /
+Disallow: /disaster-demo.html
+Disallow: /disaster-links-demo.html
+Disallow: /note-thumbnail-yonabou.html
+Disallow: /note-thumbnail-youth.html
+Disallow: /ogp-image.html
+Disallow: /pv.html
+Disallow: /thumbnail.html
+
+Sitemap: https://aoktik.github.io/yonago-voice-map/sitemap.xml
